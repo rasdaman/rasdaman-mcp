@@ -2,7 +2,6 @@ import io
 import json
 import logging
 import tempfile
-import time
 
 import netCDF4 as nc
 import numpy as np
@@ -11,42 +10,12 @@ from wcps.model import WCPSClientException
 from wcps.service import Service as WCPSConnection, WCPSResult, WCPSResultType
 from wcs.service import WebCoverageService
 
+from src.timer import Timer
 from src.wcps_crash_course import WCPS_CRASH_COURSE
 from src.wcps_parser.query_validator import validate_wcps_query
 
 logger = logging.getLogger()
 SAVE_THRESHOLD = 1000
-
-
-class Timer:
-    """Simple timer for logging execution time."""
-
-    def __init__(self):
-        self.start_time = None
-        self.end_time = None
-
-    def __enter__(self):
-        self.start_time = time.time()
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        self.end_time = time.time()
-
-    @property
-    def elapsed(self):
-        """Return elapsed time."""
-        if self.start_time is None:
-            return None
-        end = self.end_time if self.end_time is not None else time.time()
-        return end - self.start_time
-
-    def log(self, msg=""):
-        """Log message appended with 'in Xs'."""
-        if self.start_time is None:
-            return
-        elapsed = self.elapsed
-        full_msg = f"{msg} in {elapsed:.3f}s"
-        logger.info(full_msg)
 
 
 class RasdamanActions:
@@ -77,7 +46,7 @@ class RasdamanActions:
         logger.info(f"Describing coverage: {coverage_id}")
         with Timer() as timer:
             full_cov = self.wcs_service.list_full_info(coverage_id)
-            ret = str(full_cov)
+            ret = full_cov.to_short_str()
             timer.log(f"Done getting description for {coverage_id}")
         return ret
 
@@ -142,13 +111,13 @@ class RasdamanActions:
             with tempfile.NamedTemporaryFile(mode='wb', delete=False) as tmpfile:
                 tmpfile.write(response.value)
                 ret = f"{response.type.capitalize()} result saved in "
-                ret += f"file {tmpfile.name} of size {len(response.value)} bytes"
+                ret += f"file {tmpfile.name} of size {len(response.value)} bytes; "
 
             # 2D images: return filepath + image metadata
             if response.type == WCPSResultType.IMAGE:
                 img = Image.open(io.BytesIO(response.value))
                 width, height = img.size
-                ret += f"; the result is an image of {width} x {height} pixels, "
+                ret += f"the result is an image of {width} x {height} pixels, "
                 ret += f"{len(img.getbands())} bands of type {np.array(img).dtype}."
                 logger.info(ret)
                 return ret

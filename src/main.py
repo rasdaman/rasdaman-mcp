@@ -95,15 +95,14 @@ def validate_rasdaman_connection(rasdaman_url):
 # FastMCP App Factory
 # ------------------------
 
-def create_mcp_app(rasdaman_url, rasdaman_username, rasdaman_password, log_level) -> FastMCP:
+def create_mcp_app(rasdaman_url, rasdaman_username, rasdaman_password) -> FastMCP:
     """Factory function to build the FastMCP app with tools."""
     mcp = FastMCP(
         name="Rasdaman MCP Server",
         instructions=(
             "This server provides access to a rasdaman instance: "
             "list coverages, get coverage details, and execute WCPS queries."
-        ),
-        log_level=log_level.upper(),
+        )
     )
 
     ras_actions = RasdamanActions(
@@ -158,13 +157,14 @@ def create_mcp_app(rasdaman_url, rasdaman_username, rasdaman_password, log_level
 def main():
     """Entrypoint."""
     args = parse_args()
-    configure_logging(log_level=args.log_level)
+    log_level = args.log_level.upper()
+    configure_logging(log_level=log_level)
     validate_rasdaman_connection(args.rasdaman_url)
-    mcp = create_mcp_app(args.rasdaman_url, args.username, args.password, args.log_level)
+    mcp = create_mcp_app(args.rasdaman_url, args.username, args.password)
     if args.transport == 'http':
-        mcp.run(transport=args.transport, port=args.port, host=args.host)
+        mcp.run(transport=args.transport, port=args.port, host=args.host, log_level=log_level)
     else:
-        mcp.run(transport=args.transport)
+        mcp.run(transport=args.transport, log_level=log_level)
 
 
 if __name__ == "__main__":

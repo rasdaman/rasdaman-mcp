@@ -17,30 +17,27 @@ pip install rasdaman-mcp
 
 ## Usage
 
-The entry point is `rasdaman-mcp`. It can be run in two primary modes controlled by the `--transport` command-line argument: `stdio` (default) and `http`.
+First the connection from the MCP server to rasdaman needs to be configured, either through environment variables:
 
-### Configuration
-The connection from the MCP server to rasdaman can be configured in two ways.
-
-1. Command-line arguments:
- - `--rasdaman-url`: URL for the rasdaman server (default `RASDAMAN_URL` environment variable or `http://localhost:8080/rasdaman/ows`).
- - `--username`: Username for authentication (default `RASDAMAN_USERNAME` environment variable or `rasguest`).
- - `--password`: Sets the password for authentication (default `RASDAMAN_PASSWORD` environment variable or `rasguest`).
-
-2. Environment variables:
  - `RASDAMAN_URL`: URL for the rasdaman server
  - `RASDAMAN_USERNAME`: Username for authentication
  - `RASDAMAN_PASSWORD`: Password for authentication
 
+or command-line arguments to the `rasdaman-mcp` tool:
+
+ - `--rasdaman-url`: URL for the rasdaman server (default `RASDAMAN_URL` env variable or `http://localhost:8080/rasdaman/ows`).
+ - `--username`: Username for authentication (default `RASDAMAN_USERNAME` env variable or `rasguest`).
+ - `--password`: Sets the password for authentication (default `RASDAMAN_PASSWORD` env variable or `rasguest`).
+
+Then the MCP is ready to be used with an AI agent tool, in one of two modes: `stdio` (default) or `http`.
+
 ### `stdio` Mode
-Used for direct integration with clients that take over managing the server process. It uses standard input/output for communication.
-Generally in your client configuration you need to specify the command to run the MCP tool:
+Used for direct integration with clients that take over managing the server process and communicate with it through standard input/output.
+Generally in your AI tool you need to specify the command to run `rasdaman-mcp`:
 
-    rasdaman-mcp --username rasguest --password rasguest
+    rasdaman-mcp --username rasguest --password rasguest --rasdaman-url "..."
 
-Keep in mind that all dependencies are installed, and the venv is activated if necessary.
-
-Example for gemini-cli:
+Example for enabling it in gemini-cli:
 
     gemini mcp add rasdaman-mcp "rasdaman-mcp --username rasguest --password rasguest"
 
@@ -49,25 +46,56 @@ Benefits:
 - Seamless Integration: Tools are transparently made available to the LLM within the client environment.
 
 ### `http` Mode
-This mode runs a standalone Web server.
+This mode starts a standalone Web server listening on a specified host/port, e.g:
 
-1. Start the server:
+    rasdaman-mcp --transport http --host 127.0.0.1 --port 8000 --rasdaman-url "..."
 
-        rasdaman-mcp --transport http --host 127.0.0.1 --port 8000 --rasdaman-url "http://localhost:8080/rasdaman/ows"
+The MCP server URL to be configured in your AI agent would be `http://127.0.0.1:8000/mcp` with transport `streamable-http`.
+For example, for Mistral Vibe extend the config.toml with a section like this:
 
-2. Configure your client to add an MCP server at `http://127.0.0.1:8000/mcp`. For example, for 
-   Mistral Vibe extend the config.toml with a section like this:
-
-        [[mcp_servers]]
-        name = "rasdaman-mcp"
-        transport = "streamable-http"
-        url = "http://127.0.0.1:8000/mcp/"
+    [[mcp_servers]]
+    name = "rasdaman-mcp"
+    transport = "streamable-http"
+    url = "http://127.0.0.1:8000/mcp/"
 
 Benefits:
 - Scalability: The MCP server can be containerized (e.g., with Docker) and deployed as a separate microservice.
 - Decoupling: Any client that can speak HTTP (e.g., `curl`, Python scripts, web apps, other LLM clients) can interact with the tools.
 - Testing: Allows for direct API testing and debugging, independent of an LLM client.
 
+### AI agents
+
+Once an AI agent is configured with access to `rasdaman-mcp`, it becomes capable of using several tools:
+
+- list coverages in the configured rasdaman
+- get the details of a particular coverage
+- execute processing/analytics queries based on a description in natural language
+
+
+
+## Examples
+
+The following examples demonstrate the interaction with an AI agent using the rasdaman MCP server.
+
+### Listing Coverages
+
+![List Coverages](example/01-list_coverages.png)
+
+### Describing a Coverage
+
+![Describe Coverage](example/02-describe-coverage.png)
+
+### Executing a Query
+
+![Execute Query](example/03-execute-query.png)
+
+### Query Result Visualization
+
+![Query Result](example/03.1-stretched_era5_scaled.png)
+
+### Natural Language Query Suggestion
+
+![Suggest Query](example/04-suggest-query.png)
 
 ## Development
 
