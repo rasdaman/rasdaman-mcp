@@ -68,8 +68,8 @@ class RasdamanActions:
                 response: WCPSResult = self.wcps_service.execute(wcps_query)
                 timer.log("Executed WCPS query")
         except WCPSClientException as e:
-            ret = f"Executing WCPS query failed: {str(e)}"
-            logger.exception(ret)
+            ret = f"Executing WCPS query failed: {e}"
+            logger.error(ret)
             return ret
 
         # 2. interpret the result in order to return a more meaningful response to the LLM
@@ -80,7 +80,7 @@ class RasdamanActions:
                 logger.info(f"Returning scalar result: {ret}")
                 return ret
 
-            # JSON: return trimmed to 500 chars, if larger also save as temp file
+            # JSON: return result < SAVE_THRESHOLD as string, otherwise save as temp file
             if response.type == WCPSResultType.JSON:
                 ret = json.dumps(response.value)
                 if len(ret) < SAVE_THRESHOLD:
@@ -132,6 +132,6 @@ class RasdamanActions:
             return ret
 
         except Exception as e:  # pylint: disable=broad-exception-caught
-            ret = f"Failed handling WCPS query result: {str(e)}"
-            logger.exception(ret)
+            ret = f"Failed handling WCPS query result: {e}"
+            logger.error(ret)
             return ret

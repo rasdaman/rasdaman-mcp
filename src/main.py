@@ -99,10 +99,21 @@ def create_mcp_app(rasdaman_url, rasdaman_username, rasdaman_password) -> FastMC
     """Factory function to build the FastMCP app with tools."""
     mcp = FastMCP(
         name="Rasdaman MCP Server",
-        instructions=(
-            "This server provides access to a rasdaman instance: "
-            "list coverages, get coverage details, and execute WCPS queries."
-        )
+        instructions="""This server provides access to a rasdaman multi-dimensional geo-spatial database instance.
+Follow this workflow for best results:
+
+1. DISCOVERY: Start with list_coverages() to see available datacubes;
+2. EXPLORATION: Use describe_coverage(coverage_id) to understand a specific datacube (axes, bands, metadata);
+3. LEARN: WCPS query syntax with wcps_query_crash_course();
+4. EXECUTION: Use execute_wcps_query(query) to run a WCPS query.
+
+**IMPORTANT RULES:**
+
+- Always subset data (temporal and spatial) to avoid retrieving GBs of data
+- Use encode() with appropriate format: 'png' for 2D visualization, 'netcdf' for n-D data, 'json' for 1-D data
+- Scalar results (avg, min, max, etc.) don't need encode()
+- Use 'and'/'or' not '&&'/'||'; pow() not '^'; '$c.band' not '$c[band]' or '$c/band'
+"""
     )
 
     ras_actions = RasdamanActions(
