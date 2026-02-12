@@ -28,7 +28,7 @@ keywords = ["rasdaman", "wcps", "wcs", "mcp", "llm", "gis"]
 dependencies = [
     "requests",
     "fastmcp<3",
-    "wcs",
+    "wcs >= 0.3.0",
     "wcps",
     "netCDF4",
     "Pillow",
