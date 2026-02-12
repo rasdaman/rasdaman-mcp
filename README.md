@@ -129,7 +129,6 @@ The following examples demonstrate the interaction with an AI agent using the ra
 - `RasdamanActions` Class (`rasdaman_actions.py`): Encapsulates all interaction with the rasdaman WCS/WCPS endpoints.
   It is initialized with the server URL and credentials, and its methods contain the logic for listing coverages, describing them, and executing queries.
 - WCPS crash course (`wcps_crash_course.py`): A short summary of the syntax of WCPS, allowing LLMs to generate more accurate queries.
-- WCPS query validation (`query_validator.py`): Throws a `SyntaxError` if a WCPS query has invalid syntax, allowing LLMs to locally validate query syntax. 
 
 ### Defined Tools
 
@@ -137,7 +136,6 @@ The following methods are exposed as tools:
 - `list_coverages()`: Lists all available datacubes.
 - `describe_coverage(coverage_id)`: Retrieves metadata for a specific datacube.
 - `wcps_query_crash_course()`: Returns a crash course on WCPS syntax with examples and best practices.
-- `validate_wcps_query(wcps_query)`: Validates the syntax of a WCPS query without executing it.
 - `execute_wcps_query(wcps_query)`: Executes a raw WCPS query and returns a result either directly as a string (scalars or small json), or as a filepath.
 
 ### Documentation

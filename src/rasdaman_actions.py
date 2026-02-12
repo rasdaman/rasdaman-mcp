@@ -12,7 +12,6 @@ from wcs.service import WebCoverageService
 
 from src.timer import Timer
 from src.wcps_crash_course import WCPS_CRASH_COURSE
-from src.wcps_parser.query_validator import validate_wcps_query
 
 logger = logging.getLogger()
 SAVE_THRESHOLD = 1000
@@ -56,18 +55,6 @@ class RasdamanActions:
         """
         logger.info("Returning WCPS crash course.")
         return WCPS_CRASH_COURSE
-
-    def validate_wcps_query_action(self, wcps_query: str) -> str:
-        """
-        Validates a WCPS query string by parsing it.
-        Returns "VALID" if the query is syntactically correct,
-        "INVALID SYNTAX: <error message>" otherwise.
-        """
-        try:
-            validate_wcps_query(wcps_query)
-            return "VALID"
-        except SyntaxError as e:
-            return f"INVALID SYNTAX: {str(e)}"
 
     def execute_wcps_query_action(self, wcps_query: str) -> str:
         """
