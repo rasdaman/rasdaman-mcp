@@ -79,23 +79,23 @@ The following examples demonstrate the interaction with an AI agent using the ra
 
 ### Listing Coverages
 
-![List Coverages](docs/assets/img/01-list_coverages.png)
+![](https://github.com/rasdaman/rasdaman-mcp/blob/main/docs/assets/img/01-list_coverages.png?raw=true)
 
 ### Describing a Coverage
 
-![Describe Coverage](docs/assets/img/02-describe-coverage.png)
+![](https://github.com/rasdaman/rasdaman-mcp/blob/main/docs/assets/img/02-describe-coverage.png?raw=true)
 
 ### Executing a Query
 
-![Execute Query](docs/assets/img/03-execute-query.png)
+![](https://github.com/rasdaman/rasdaman-mcp/blob/main/docs/assets/img/03-execute-query.png?raw=true)
 
 ### Query Result Visualization
 
-![Query Result](docs/assets/img/03.1-stretched_era5_scaled.png)
+![](https://github.com/rasdaman/rasdaman-mcp/blob/main/docs/assets/img/03.1-stretched_era5_scaled.png?raw=true)
 
 ### Natural Language Query Suggestion
 
-![Suggest Query](docs/assets/img/04-suggest-query.png)
+![](https://github.com/rasdaman/rasdaman-mcp/blob/main/docs/assets/img/04-suggest-query.png?raw=true)
 
 ## Development
 
