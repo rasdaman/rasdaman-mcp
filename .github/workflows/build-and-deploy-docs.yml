@@ -7,7 +7,10 @@ on:
     branches: [ main ]
     paths:
       - 'docs/**'
+      - 'src/__init__.py'
       - '.github/workflows/build-and-deploy-docs.yml'
+    tags:
+      - 'v*'
 
 permissions:
   contents: write
@@ -22,11 +25,24 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Extract version from src/__init__.py
+        id: version
+        run: |
+          VERSION=$(grep '__version__' src/__init__.py | sed -E 's/.*= *"([^"]+)".*/\1/')
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Detected version: $VERSION"
+
       - name: Prepare site directory
         run: |
           mkdir -p _site
-          # Copy the main HTML file and all example images
+          # Copy all docs files
           cp -r docs/* _site/
+
+      - name: Update version in index.html
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          sed -i "s/rasdaman-mcp v[0-9]\+\.[0-9]\+\.[0-9]\+/rasdaman-mcp v$VERSION/g" _site/index.html
+          echo "Updated version to v$VERSION"
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
