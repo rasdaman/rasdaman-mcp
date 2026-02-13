@@ -79,23 +79,23 @@ The following examples demonstrate the interaction with an AI agent using the ra
 
 ### Listing Coverages
 
-![List Coverages](example/01-list_coverages.png)
+![List Coverages](docs/example/01-list_coverages.png)
 
 ### Describing a Coverage
 
-![Describe Coverage](example/02-describe-coverage.png)
+![Describe Coverage](docs/example/02-describe-coverage.png)
 
 ### Executing a Query
 
-![Execute Query](example/03-execute-query.png)
+![Execute Query](docs/example/03-execute-query.png)
 
 ### Query Result Visualization
 
-![Query Result](example/03.1-stretched_era5_scaled.png)
+![Query Result](docs/example/03.1-stretched_era5_scaled.png)
 
 ### Natural Language Query Suggestion
 
-![Suggest Query](example/04-suggest-query.png)
+![Suggest Query](docs/example/04-suggest-query.png)
 
 ## Development
 
