@@ -1180,7 +1180,7 @@ url = "http://127.0.0.1:8000/mcp/"</pre>
         
         let width, height;
         let particles = [];
-        const particleCount = 60;
+        const particleCount = 20;
         const connectionDistance = 120;
         const mouseDistance = 150;
         
@@ -1197,7 +1197,7 @@ url = "http://127.0.0.1:8000/mcp/"</pre>
                 this.y = Math.random() * height;
                 this.vx = (Math.random() - 0.5) * 0.3;
                 this.vy = (Math.random() - 0.5) * 0.3;
-                this.radius = Math.random() * 1.5 + 0.5;
+                this.radius = Math.random() * 20 + 0.5;
                 this.opacity = Math.random() * 0.5 + 0.2;
             }
             
@@ -1229,10 +1229,42 @@ url = "http://127.0.0.1:8000/mcp/"</pre>
             }
             
             draw() {
+                const s = this.radius * 2;
+                const hs = s / 2;
+                const depth = s * 0.6;
+                const hd = depth / 2;
+                
+                // Back corner offset (up and right for isometric view)
+                const bx = this.x + hd;
+                const by = this.y - hd;
+                
+                ctx.strokeStyle = `rgba(0, 240, 255, ${this.opacity})`;
+                ctx.lineWidth = 0.5;
+                
+                // Front face (fully visible)
                 ctx.beginPath();
-                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-                ctx.fillStyle = `rgba(0, 240, 255, ${this.opacity})`;
-                ctx.fill();
+                ctx.moveTo(this.x - hs, this.y - hs);
+                ctx.lineTo(this.x + hs, this.y - hs);
+                ctx.lineTo(this.x + hs, this.y + hs);
+                ctx.lineTo(this.x - hs, this.y + hs);
+                ctx.closePath();
+                ctx.stroke();
+                
+                // Top face - only visible edges (back edge and sides going back)
+                ctx.beginPath();
+                ctx.moveTo(this.x - hs, this.y - hs);
+                ctx.lineTo(bx - hs, by - hs);
+                ctx.lineTo(bx + hs, by - hs);
+                ctx.lineTo(this.x + hs, this.y - hs);
+                ctx.stroke();
+                
+                // Right face - only visible edges (back edge and sides going back)
+                ctx.beginPath();
+                ctx.moveTo(this.x + hs, this.y - hs);
+                ctx.lineTo(bx + hs, by - hs);
+                ctx.lineTo(bx + hs, by + hs);
+                ctx.lineTo(this.x + hs, this.y + hs);
+                ctx.stroke();
             }
         }
         
