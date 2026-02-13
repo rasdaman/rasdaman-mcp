@@ -77,7 +77,7 @@
             100% { opacity: 1; transform: translateX(2%) translateY(1%); }
         }
 
-        /* Noise Texture */
+        /* Noise Texture - Static PNG */
         .noise-overlay {
             position: fixed;
             top: 0;
@@ -86,8 +86,9 @@
             height: 100%;
             z-index: 2;
             pointer-events: none;
-            opacity: 0.03;
-            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+            opacity: 0.04;
+            background-image: url('assets/img/noise.png');
+            background-repeat: repeat;
         }
 
         /* Main Content */
@@ -1105,7 +1106,7 @@ url = "http://127.0.0.1:8000/mcp/"</pre>
             <div class="examples-grid">
                 <div class="example-card reveal">
                     <div class="example-image">
-                        <img src="example/01-list_coverages.png" alt="Listing available coverages in rasdaman" loading="lazy">
+                        <img src="assets/img/01-list_coverages.png" alt="Listing available coverages in rasdaman" loading="lazy">
                     </div>
                     <div class="example-content">
                         <h3>Listing Coverages</h3>
@@ -1114,7 +1115,7 @@ url = "http://127.0.0.1:8000/mcp/"</pre>
                 </div>
                 <div class="example-card reveal">
                     <div class="example-image">
-                        <img src="example/02-describe-coverage.png" alt="Describing ERA5_Land_monthly coverage metadata" loading="lazy">
+                        <img src="assets/img/02-describe-coverage.png" alt="Describing ERA5_Land_monthly coverage metadata" loading="lazy">
                     </div>
                     <div class="example-content">
                         <h3>Describing a Coverage</h3>
@@ -1123,7 +1124,7 @@ url = "http://127.0.0.1:8000/mcp/"</pre>
                 </div>
                 <div class="example-card reveal">
                     <div class="example-image">
-                        <img src="example/03-execute-query.png" alt="Executing WCPS query for wind speed calculation" loading="lazy">
+                        <img src="assets/img/03-execute-query.png" alt="Executing WCPS query for wind speed calculation" loading="lazy">
                     </div>
                     <div class="example-content">
                         <h3>Performing Calculations</h3>
@@ -1132,7 +1133,7 @@ url = "http://127.0.0.1:8000/mcp/"</pre>
                 </div>
                 <div class="example-card reveal">
                     <div class="example-image">
-                        <img src="example/03.1-stretched_era5_scaled.png" alt="Global wind speed visualization result" loading="lazy">
+                        <img src="assets/img/03.1-stretched_era5_scaled.png" alt="Global wind speed visualization result" loading="lazy">
                     </div>
                     <div class="example-content">
                         <h3>Query Result Visualization</h3>
@@ -1141,7 +1142,7 @@ url = "http://127.0.0.1:8000/mcp/"</pre>
                 </div>
                 <div class="example-card wide reveal">
                     <div class="example-image wide-img">
-                        <img src="example/04-suggest-query.png" alt="Natural language query suggestion for wind farm analysis" loading="lazy">
+                        <img src="assets/img/04-suggest-query.png" alt="Natural language query suggestion for wind farm analysis" loading="lazy">
                     </div>
                     <div class="example-content">
                         <h3>Query Suggestion</h3>
