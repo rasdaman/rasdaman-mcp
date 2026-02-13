@@ -56,9 +56,11 @@ class RasdamanActions:
         logger.info("Returning WCPS crash course.")
         return WCPS_CRASH_COURSE
 
-    def execute_wcps_query_action(self, wcps_query: str) -> str:
+    def execute_wcps_query_action(self, wcps_query: str) -> dict:
         """
         Executes a WCPS query in rasdaman using the wcps-python-client library.
+        Returns a structured dictionary with result type, file path (if applicable),
+        and metadata.
         """
         logger.info(f"Executing WCPS query: {wcps_query}")
 
@@ -68,48 +70,63 @@ class RasdamanActions:
                 response: WCPSResult = self.wcps_service.execute(wcps_query)
                 timer.log("Executed WCPS query")
         except WCPSClientException as e:
-            ret = f"Executing WCPS query failed: {e}"
-            logger.error(ret)
-            return ret
+            logger.error(f"Executing WCPS query failed: {e}")
+            return {
+                "success": False,
+                "error": str(e),
+                "query": wcps_query,
+            }
 
-        # 2. interpret the result in order to return a more meaningful response to the LLM
+        # 2. interpret the result in order to return a structured response
+        result = {
+            "success": True,
+            "query": wcps_query,
+            "result_type": response.type.name,
+        }
+
         try:
             # scalars: returned directly
             if response.type in [WCPSResultType.SCALAR, WCPSResultType.MULTIBAND_SCALAR]:
-                ret = str(response.value)
-                logger.info(f"Returning scalar result: {ret}")
-                return ret
+                result["value"] = response.value
+                logger.info(f"Returning scalar result: {response.value}")
+                return result
 
-            # JSON: return result < SAVE_THRESHOLD as string, otherwise save as temp file
+            # JSON: return result < SAVE_THRESHOLD as value, otherwise save as temp file
             if response.type == WCPSResultType.JSON:
-                ret = json.dumps(response.value)
-                if len(ret) < SAVE_THRESHOLD:
-                    logger.info(f"Returning JSON result: {ret}")
-                    return ret
+                json_str = json.dumps(response.value)
+                if len(json_str) < SAVE_THRESHOLD:
+                    result["value"] = response.value
+                    logger.info(f"Returning JSON result: {json_str}")
+                    return result
 
-                # else result is too large, save as file and return first 500 chars
-                with tempfile.NamedTemporaryFile(mode='w', delete=False) as tmpfile:
-                    tmpfile.write(ret)
-                    ret = f"JSON result saved in file {tmpfile.name}"
-                    logger.info(ret)
-                    return ret
+                # else result is too large, save as file
+                with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.json') as tmpfile:
+                    tmpfile.write(json_str)
+                    result["file_path"] = tmpfile.name
+                    result["file_size"] = len(json_str)
+                    logger.info(f"JSON result saved in file {tmpfile.name}")
+                    return result
 
             # at this point the result is some binary format -> save to a file first
             with tempfile.NamedTemporaryFile(mode='wb', delete=False) as tmpfile:
                 tmpfile.write(response.value)
-                ret = f"{response.type.capitalize()} result saved in "
-                ret += f"file {tmpfile.name} of size {len(response.value)} bytes; "
+                result["file_path"] = tmpfile.name
+                result["file_size"] = len(response.value)
 
-            # 2D images: return filepath + image metadata
+            # 2D images: add image metadata
             if response.type == WCPSResultType.IMAGE:
                 img = Image.open(io.BytesIO(response.value))
                 width, height = img.size
-                ret += f"the result is an image of {width} x {height} pixels, "
-                ret += f"{len(img.getbands())} bands of type {np.array(img).dtype}."
-                logger.info(ret)
-                return ret
+                result["metadata"] = {
+                    "width": width,
+                    "height": height,
+                    "bands": len(img.getbands()),
+                    "dtype": str(np.array(img).dtype),
+                }
+                logger.info(f"Image result: {width}x{height} pixels, {len(img.getbands())} bands")
+                return result
 
-            # NetCDF: return filepath + image metadata
+            # NetCDF: add metadata
             if response.type == WCPSResultType.NETCDF:
                 with nc.Dataset("memory", mode="r", memory=response.value) as ds:  # pylint: disable=no-member
                     dimensions = {name: len(dim) for name, dim in ds.dimensions.items()}
@@ -118,20 +135,24 @@ class RasdamanActions:
                         if var_name in ds.dimensions:
                             continue
                         variables[var_name] = {
-                            "type": var.dtype,
+                            "dims": var.dimensions,
                             "shape": var.shape,
-                            "dimensions": var.dimensions,
+                            "type": str(var.dtype),
                             "attributes": dict(var.__dict__),
                         }
-                    ret += f"dimensions: {dimensions}; variables: {variables}"
-                logger.info(ret)
-                return ret
+                    result["metadata"] = {
+                        "dims": dimensions,
+                        "vars": variables,
+                    }
+                logger.info(f"NetCDF result: dimensions={dimensions}, variables={list(variables.keys())}")
+                return result
 
-            # Non-encoded raw array
-            logger.info(ret)
-            return ret
+            # Non-encoded raw array (NUMPY or other binary types)
+            logger.info(f"Binary result saved in file {result['file_path']}")
+            return result
 
         except Exception as e:  # pylint: disable=broad-exception-caught
-            ret = f"Failed handling WCPS query result: {e}"
-            logger.error(ret)
-            return ret
+            logger.error(f"Failed handling WCPS query result: {e}")
+            result["success"] = False
+            result["error"] = str(e)
+            return result

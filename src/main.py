@@ -109,10 +109,11 @@ Follow this workflow for best results:
 
 **IMPORTANT RULES:**
 
-- Always subset data (temporal and spatial) to avoid retrieving GBs of data
-- Use encode() with appropriate format: 'png' for 2D visualization, 'netcdf' for n-D data, 'json' for 1-D data
-- Scalar results (avg, min, max, etc.) don't need encode()
-- Use 'and'/'or' not '&&'/'||'; pow() not '^'; '$c.band' not '$c[band]' or '$c/band'
+- Always subset data (temporal and spatial) to avoid retrieving GBs of data;
+- Use encode() with appropriate format: 'png' for 2D visualization, 'netcdf' for n-D data, 'json' for 1-D data;
+- Scalar results (avg, min, max, etc.) don't need encode();
+- Use 'and'/'or' not '&&'/'||'; pow() not '^'; '$c.band' not '$c[band]' or '$c/band';
+- The let clause consists of a **single** 'let' keyword followed by multiple **comma-separated** variable definitions.
 """
     )
 
@@ -144,12 +145,14 @@ Follow this workflow for best results:
         return ras_actions.wcps_query_crash_course_action()
 
     @mcp.tool()
-    def execute_wcps_query(wcps_query: str) -> Any:
+    def execute_wcps_query(wcps_query: str) -> dict:
         """
         Executes a Web Coverage Processing Service (WCPS) query in rasdaman.
-        Use this for spatio-temporal subsetting of datacubes, processing, aggregation, or filtering.
-        If the query returns binary data (e.g., an image or NetCDF file),
-        the tool saves it to a temporary file and return the path.
+        Use this for spatio-temporal subsetting of datacubes, processing, aggregation, filtering.
+
+        Returns a structured dictionary indicating success, result_type, original query, the
+        actual result value for scalar and small JSON or file path for large/binary results.
+
         **Important:** Show the actual WCPS query and the result file path to the user.
         """
         return ras_actions.execute_wcps_query_action(wcps_query)

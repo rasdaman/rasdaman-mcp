@@ -188,7 +188,10 @@ class TestExecuteWCPSQueryAction:
         actions = RasdamanActions("http://test", "user", "pass")
         result = actions.execute_wcps_query_action("for $c in (test) return avg($c)")
 
-        assert result == "42.5"
+        assert result["success"] is True
+        assert result["result_type"] == "SCALAR"
+        assert result["value"] == 42.5
+        assert result["query"] == "for $c in (test) return avg($c)"
 
     @patch('src.rasdaman_actions.WebCoverageService')
     @patch('src.rasdaman_actions.WCPSConnection')
@@ -205,9 +208,9 @@ class TestExecuteWCPSQueryAction:
         actions = RasdamanActions("http://test", "user", "pass")
         result = actions.execute_wcps_query_action("for $c in (test) return $c[Lat(0), Lon(0)]")
 
-        assert "255" in result
-        assert "128" in result
-        assert "0" in result
+        assert result["success"] is True
+        assert result["result_type"] == "MULTIBAND_SCALAR"
+        assert result["value"] == {"red": 255, "green": 128, "blue": 0}
 
     @patch('src.rasdaman_actions.WebCoverageService')
     @patch('src.rasdaman_actions.WCPSConnection')
@@ -225,7 +228,9 @@ class TestExecuteWCPSQueryAction:
         actions = RasdamanActions("http://test", "user", "pass")
         result = actions.execute_wcps_query_action("for $c in (test) return encode($c, 'application/json')")
 
-        assert json.dumps(json_data) == result
+        assert result["success"] is True
+        assert result["result_type"] == "JSON"
+        assert result["value"] == json_data
 
     @patch('src.rasdaman_actions.WebCoverageService')
     @patch('src.rasdaman_actions.WCPSConnection')
@@ -246,10 +251,13 @@ class TestExecuteWCPSQueryAction:
         actions = RasdamanActions("http://test", "user", "pass")
         result = actions.execute_wcps_query_action("for $c in (test) return encode($c, 'application/json')")
 
-        assert "JSON result saved in file" in result
-        # Extract filename and verify file exists with correct content
-        filename = result.split("file ")[1].strip()
-        with open(filename, 'r') as f:
+        assert result["success"] is True
+        assert result["result_type"] == "JSON"
+        assert "file_path" in result
+        assert "file_size" in result
+        assert result["file_size"] == len(json_str)
+        # Verify file exists with correct content
+        with open(result["file_path"], 'r') as f:
             content = f.read()
             assert json.loads(content) == large_data
 
@@ -274,9 +282,15 @@ class TestExecuteWCPSQueryAction:
         actions = RasdamanActions("http://test", "user", "pass")
         result = actions.execute_wcps_query_action("for $c in (test) return encode($c, 'image/png')")
 
-        assert "Image result saved in file" in result
-        assert "100 x 50 pixels" in result
-        assert "3 bands" in result
+        assert result["success"] is True
+        assert result["result_type"] == "IMAGE"
+        assert "file_path" in result
+        assert "file_size" in result
+        assert result["file_size"] == len(img_data)
+        assert "metadata" in result
+        assert result["metadata"]["width"] == 100
+        assert result["metadata"]["height"] == 50
+        assert result["metadata"]["bands"] == 3
 
     @patch('src.rasdaman_actions.WebCoverageService')
     @patch('src.rasdaman_actions.WCPSConnection')
@@ -322,9 +336,14 @@ class TestExecuteWCPSQueryAction:
         actions = RasdamanActions("http://test", "user", "pass")
         result = actions.execute_wcps_query_action("for $c in (test) return encode($c, 'netcdf')")
 
-        assert "Netcdf result saved in file" in result
-        assert "dimensions:" in result.lower()
-        assert "variables:" in result.lower()
+        assert result["success"] is True
+        assert result["result_type"] == "NETCDF"
+        assert "file_path" in result
+        assert "file_size" in result
+        assert "metadata" in result
+        assert "dimensions" in result["metadata"]
+        assert "variables" in result["metadata"]
+        assert "temperature" in result["metadata"]["variables"]
 
     @patch('src.rasdaman_actions.WebCoverageService')
     @patch('src.rasdaman_actions.WCPSConnection')
@@ -337,8 +356,10 @@ class TestExecuteWCPSQueryAction:
         actions = RasdamanActions("http://test", "user", "pass")
         result = actions.execute_wcps_query_action("invalid query")
 
-        assert "Executing WCPS query failed" in result
-        assert "Query syntax error" in result
+        assert result["success"] is False
+        assert "error" in result
+        assert "Query syntax error" in result["error"]
+        assert result["query"] == "invalid query"
 
     @patch('src.rasdaman_actions.WebCoverageService')
     @patch('src.rasdaman_actions.WCPSConnection')
@@ -356,21 +377,16 @@ class TestExecuteWCPSQueryAction:
         actions = RasdamanActions("http://test", "user", "pass")
         result = actions.execute_wcps_query_action("for $c in (test) return encode($c, 'image/png')")
 
-        assert "Failed handling WCPS query result" in result
+        assert result["success"] is False
+        assert "error" in result
 
     @patch('src.rasdaman_actions.WebCoverageService')
     @patch('src.rasdaman_actions.WCPSConnection')
     def test_execute_numpy_result(self, mock_wcps_class, mock_wcs_class):
         """Test execution returning a numpy array result type."""
-        # Create a simple class to avoid MagicMock issues with type attribute
-        class MockResult:
-            def __init__(self, result_type, value):
-                self.type = result_type
-                self.value = value
-            def capitalize(self):
-                return "Numpy"
-        
-        mock_result = MockResult(WCPSResultType.NUMPY, b"some_binary_data")
+        mock_result = MagicMock()
+        mock_result.type = WCPSResultType.NUMPY
+        mock_result.value = b"some_binary_data"
         
         mock_wcps_instance = MagicMock()
         mock_wcps_instance.execute.return_value = mock_result
@@ -379,8 +395,11 @@ class TestExecuteWCPSQueryAction:
         actions = RasdamanActions("http://test", "user", "pass")
         result = actions.execute_wcps_query_action("for $c in (test) return $c")
 
-        assert "result saved in file" in result.lower()
-        assert "bytes" in result
+        assert result["success"] is True
+        assert result["result_type"] == "NUMPY"
+        assert "file_path" in result
+        assert "file_size" in result
+        assert result["file_size"] == len(b"some_binary_data")
 
     @patch('src.rasdaman_actions.WebCoverageService')
     @patch('src.rasdaman_actions.WCPSConnection')
@@ -398,6 +417,8 @@ class TestExecuteWCPSQueryAction:
         mock_wcps_class.return_value = mock_wcps_instance
 
         actions = RasdamanActions("http://test", "user", "pass")
-        actions.execute_wcps_query_action("for $c in (test) return 42")
+        result = actions.execute_wcps_query_action("for $c in (test) return 42")
 
         assert "Executing WCPS query" in caplog.text
+        assert result["success"] is True
+        assert result["value"] == 42
