@@ -102,10 +102,10 @@ def create_mcp_app(rasdaman_url, rasdaman_username, rasdaman_password) -> FastMC
         instructions="""This server provides access to a rasdaman multi-dimensional geo-spatial database instance.
 Follow this workflow for best results:
 
-1. DISCOVERY: Start with list_coverages() to see available datacubes;
-2. EXPLORATION: Use describe_coverage(coverage_id) to understand a specific datacube (axes, bands, metadata);
-3. LEARN: WCPS query syntax with wcps_query_crash_course();
-4. EXECUTION: Use execute_wcps_query(query) to run a WCPS query.
+1. DISCOVER: Start with `list_coverages()` to see available datacubes;
+2. EXPLORE: Use `describe_coverage(coverage_id)` to understand a specific datacube (axes, bands, metadata);
+3. LEARN: WCPS query syntax with `wcps_query_crash_course()`;
+4. EXECUTE: Use `execute_wcps_query(query)` to run a WCPS query.
 
 **IMPORTANT RULES:**
 
@@ -122,7 +122,7 @@ Follow this workflow for best results:
     )
 
     @mcp.tool()
-    def list_coverages() -> list[str]:
+    def list_coverages() -> str:
         """
         Lists all available datacubes (coverages) in rasdaman.
         """

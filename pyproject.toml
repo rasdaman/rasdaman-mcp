@@ -27,9 +27,9 @@ license-files = ["LICENSE"]
 keywords = ["rasdaman", "wcps", "wcs", "mcp", "llm", "gis"]
 dependencies = [
     "requests",
-    "fastmcp<3",
+    "fastmcp",
     "wcs >= 0.3.0",
-    "wcps",
+    "wcps >= 0.5.6",
     "netCDF4",
     "Pillow",
     "antlr4-python3-runtime",

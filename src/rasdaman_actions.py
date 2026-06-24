@@ -11,7 +11,7 @@ from wcps.service import Service as WCPSConnection, WCPSResult, WCPSResultType
 from wcs.service import WebCoverageService
 
 from src.timer import Timer
-from src.wcps_crash_course import WCPS_CRASH_COURSE
+from src.wcps_crash_course import WCPS_CRASH_COURSE, WCPS_UDFS
 
 logger = logging.getLogger()
 SAVE_THRESHOLD = 1000
@@ -27,14 +27,41 @@ class RasdamanActions:
         self.wcs_service = WebCoverageService(rasdaman_url, username=username, password=password)
         self.wcps_service = WCPSConnection(rasdaman_url, username=username, password=password)
 
-    def list_coverages_action(self) -> list[str]:
+    def list_coverages_action(self) -> str:
         """
         Lists all available datacubes (coverages) in the rasdaman database.
         """
         logger.info("Listing coverages in rasdaman...")
         with Timer() as timer:
             coverages = self.wcs_service.list_coverages()
-            ret = list(coverages.keys())
+            coverages_str = ', '.join(coverages.keys())
+            ret = f'Coverages (datacubes): {coverages_str}'
+            udfs_str = self.wcps_service.list_udfs()
+            if udfs_str:
+                try:
+                    udfs_json = json.loads(udfs_str)
+                    # convert json into concise text, e.g. from
+                    # {
+                    #     "namespace" : "example",
+                    #     "name" : "Avg2",
+                    #     "parameters" : [ "Coverage" ],
+                    #     "returns" : "Number",
+                    #     "documentation" : "Calculate the average of a coverage expression."
+                    # }
+                    # to 
+                    # - example.Avg2(Coverage) -> Number: Calculate the average of a coverage expression.
+                    # 
+                    output = ["Available UDFs (user-defined functions):"]
+                    for udf in udfs_json:
+                        params = ", ".join(udf['parameters'])
+                        func = f"{udf['namespace']}.{udf['name']}"
+                        line = f"- {func}({params}) -> {udf['returns']} : {udf['documentation']}"
+                        output.append(line)
+                    
+                    ret += "\n\n"
+                    ret += "\n".join(output)
+                except:
+                    pass
             timer.log(f"Listed {len(coverages)} coverages")
         return ret
 
@@ -54,7 +81,16 @@ class RasdamanActions:
         Returns a crash course on writing WCPS queries.
         """
         logger.info("Returning WCPS crash course.")
-        return WCPS_CRASH_COURSE
+        ret = WCPS_CRASH_COURSE
+        try:
+            # inject UDFs doc if the service has an UDFs available
+            if self.wcps_service.list_udfs():
+                before_header = '## LLM Generation Checklist'
+                new_section = f'{WCPS_UDFS}\n\n{before_header}'
+                ret = ret.replace(before_header, new_section)
+        except:
+            pass
+        return ret
 
     def execute_wcps_query_action(self, wcps_query: str) -> dict:
         """
@@ -103,7 +139,7 @@ class RasdamanActions:
                 with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.json') as tmpfile:
                     tmpfile.write(json_str)
                     result["file_path"] = tmpfile.name
-                    result["file_size"] = len(json_str)
+                    result["file_size"] = str(len(json_str))
                     logger.info(f"JSON result saved in file {tmpfile.name}")
                     return result
 
@@ -111,7 +147,7 @@ class RasdamanActions:
             with tempfile.NamedTemporaryFile(mode='wb', delete=False) as tmpfile:
                 tmpfile.write(response.value)
                 result["file_path"] = tmpfile.name
-                result["file_size"] = len(response.value)
+                result["file_size"] = str(len(response.value))
 
             # 2D images: add image metadata
             if response.type == WCPSResultType.IMAGE:

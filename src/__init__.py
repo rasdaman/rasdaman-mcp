@@ -1,3 +1,3 @@
 __title__ = 'rasdaman-mcp'
 __author__ = 'rasdaman team'
-__version__ = "0.2.1"
+__version__ = "0.3.0"

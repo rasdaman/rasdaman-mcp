@@ -210,3 +210,13 @@ return sum(coverage-producing-expression)
 3. `$c[time("2020-01-01")]`               // Slice on time axis with a date
 3. `$c[time("2020-01-01T10:00:00")]`      // Slice on time axis with an ISO datetime
 """
+
+WCPS_UDFS = """
+## UDFs (user-defined functions)
+
+UDFs can be invoked like regular functions, except they are grouped in a namespace:
+`namespace.function_name(parameters)`. E.g. `image.Stretch($cov)`, `stats.Var_pop($cov)`, etc.
+
+The `list_coverages` tool also returns a list of available UDFs on the server
+(if any have been registered).
+"""
