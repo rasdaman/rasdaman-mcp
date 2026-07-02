@@ -35,7 +35,8 @@ class RasdamanActions:
         with Timer() as timer:
             coverages = self.wcs_service.list_coverages()
             coverages_str = ', '.join(coverages.keys())
-            ret = f'Coverages (datacubes): {coverages_str}'
+            total_cov_count = len(coverages)
+            ret = f'{total_cov_count} coverages (datacubes) are available: {coverages_str}'
             udfs_str = self.wcps_service.list_udfs()
             if udfs_str:
                 try:
@@ -51,7 +52,8 @@ class RasdamanActions:
                     # to 
                     # - example.Avg2(Coverage) -> Number: Calculate the average of a coverage expression.
                     # 
-                    output = ["Available UDFs (user-defined functions):"]
+                    total_udf_count = len(udfs_json)
+                    output = ["{total_udf_count} UDFs (user-defined functions) are available:"]
                     for udf in udfs_json:
                         params = ", ".join(udf['parameters'])
                         func = f"{udf['namespace']}.{udf['name']}"
@@ -62,7 +64,7 @@ class RasdamanActions:
                     ret += "\n".join(output)
                 except:
                     pass
-            timer.log(f"Listed {len(coverages)} coverages")
+            timer.log(f"Listed {total_cov_count} coverages")
         return ret
 
     def describe_coverage_action(self, coverage_id: str) -> str:
