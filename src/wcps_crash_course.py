@@ -220,3 +220,14 @@ UDFs can be invoked like regular functions, except they are grouped in a namespa
 The `list_coverages` tool also returns a list of available UDFs on the server
 (if any have been registered).
 """
+
+WCPS_CRASH_COURSE += """
+
+## Need more detail?
+
+This crash course is intentionally brief. Detailed per-topic documentation is
+available as chapters: call `wcps_doc_chapters()` to list them (each with a
+description of when to use it), then `wcps_get_chapter(name)` to read one.
+If a query fails and the error is unclear, fetch the `common-errors` chapter
+first — it maps error symptoms to concrete fixes.
+"""

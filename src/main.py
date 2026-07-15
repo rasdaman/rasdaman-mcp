@@ -105,7 +105,11 @@ Follow this workflow for best results:
 1. DISCOVER: Start with `list_coverages()` to see available datacubes;
 2. EXPLORE: Use `describe_coverage(coverage_id)` to understand a specific datacube (axes, bands, metadata);
 3. LEARN: WCPS query syntax with `wcps_query_crash_course()`;
-4. EXECUTE: Use `execute_wcps_query(query)` to run a WCPS query.
+4. EXECUTE: Use `execute_wcps_query(query)` to run a WCPS query;
+5. DEEP-DIVE: when the crash course is not enough or a query keeps failing,
+   list detailed documentation chapters with `wcps_doc_chapters()` and fetch
+   the relevant one with `wcps_get_chapter(name)` (after errors, start with
+   the 'common-errors' chapter).
 
 **IMPORTANT RULES:**
 
@@ -157,7 +161,57 @@ Follow this workflow for best results:
         """
         return ras_actions.execute_wcps_query_action(wcps_query)
 
+    @mcp.tool()
+    def wcps_doc_chapters() -> str:
+        """
+        Lists the detailed WCPS documentation chapters, one per topic, each
+        with a description of what it covers and when to fetch it. Use when
+        the crash course is not detailed enough — pick the chapter matching
+        your problem and fetch it with wcps_get_chapter(name). After a failed
+        query, the 'common-errors' chapter maps error symptoms to fixes.
+        """
+        lines = []
+        for path in sorted(_chapters_dir().glob("*.md")):
+            desc = _chapter_description(path)
+            lines.append(f"- {path.stem}: {desc}")
+        return "\n".join(lines) if lines else "No documentation chapters installed."
+
+    @mcp.tool()
+    def wcps_get_chapter(name: str) -> str:
+        """
+        Returns one full WCPS documentation chapter (markdown) by name, as
+        listed by wcps_doc_chapters(). Example: wcps_get_chapter("switch-case").
+        """
+        path = _chapters_dir() / f"{name.strip()}.md"
+        if not path.is_file():
+            available = ", ".join(p.stem for p in sorted(_chapters_dir().glob("*.md")))
+            return f"Unknown chapter '{name}'. Available chapters: {available}"
+        return path.read_text()
+
     return mcp
+
+
+# ---------------------------------------
+# WCPS documentation chapters
+# ---------------------------------------
+# Chapters are markdown files shipped with the package; each carries its own
+# description in YAML-style frontmatter (---\ndescription: ...\n---). Adding a
+# chapter = dropping a new .md file into src/wcps_chapters/ — no other change.
+
+def _chapters_dir():
+    from pathlib import Path
+    return Path(__file__).resolve().parent / "wcps_chapters"
+
+
+def _chapter_description(path) -> str:
+    lines = path.read_text().splitlines()
+    if lines and lines[0].strip() == "---":
+        for line in lines[1:10]:
+            if line.strip() == "---":
+                break
+            if line.startswith("description:"):
+                return line[len("description:"):].strip()
+    return "(no description)"
 
 
 def main():
