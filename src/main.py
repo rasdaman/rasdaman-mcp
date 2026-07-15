@@ -168,9 +168,9 @@ def main():
     validate_rasdaman_connection(args.rasdaman_url)
     mcp = create_mcp_app(args.rasdaman_url, args.username, args.password)
     if args.transport == 'http':
-        mcp.run(transport=args.transport, port=args.port, host=args.host, log_level=log_level)
+        mcp.run(transport=args.transport, port=args.port, host=args.host, log_level=log_level, show_banner=False)
     else:
-        mcp.run(transport=args.transport, log_level=log_level)
+        mcp.run(transport=args.transport, log_level=log_level, show_banner=False)
 
 
 if __name__ == "__main__":
