@@ -347,6 +347,56 @@ class TestExecuteWCPSQueryAction:
 
     @patch('src.rasdaman_actions.WebCoverageService')
     @patch('src.rasdaman_actions.WCPSConnection')
+    def test_execute_text_result_small(self, mock_wcps_class, mock_wcs_class):
+        """Test execution returning a small text result (e.g. domain bounds).
+
+        A query like ``return domain($e, Lon)`` yields a plain-text value such as
+        "(114.975:145.025)". This must be returned directly, not written to a
+        binary file (which raised "a bytes-like object is required, not 'str'").
+        """
+        text_value = "(114.9750000000000006:145.02500000000000661)"
+        mock_result = MagicMock()
+        mock_result.type = WCPSResultType.ARRAY
+        mock_result.value = text_value
+
+        mock_wcps_instance = MagicMock()
+        mock_wcps_instance.execute.return_value = mock_result
+        mock_wcps_class.return_value = mock_wcps_instance
+
+        actions = RasdamanActions("http://test", "user", "pass")
+        result = actions.execute_wcps_query_action(
+            "for $c in (test) let $e := $c[Lat(-35:-25), Lon(120:140)] return domain($e, Lon)"
+        )
+
+        assert result["success"] is True
+        assert result["value"] == text_value
+        assert "file_path" not in result
+
+    @patch('src.rasdaman_actions.WebCoverageService')
+    @patch('src.rasdaman_actions.WCPSConnection')
+    def test_execute_text_result_large(self, mock_wcps_class, mock_wcs_class):
+        """Test execution returning a large text result (saved to a text file)."""
+        large_text = "x" * (SAVE_THRESHOLD + 100)
+        mock_result = MagicMock()
+        mock_result.type = WCPSResultType.ARRAY
+        mock_result.value = large_text
+
+        mock_wcps_instance = MagicMock()
+        mock_wcps_instance.execute.return_value = mock_result
+        mock_wcps_class.return_value = mock_wcps_instance
+
+        actions = RasdamanActions("http://test", "user", "pass")
+        result = actions.execute_wcps_query_action("for $c in (test) return domain($c)")
+
+        assert result["success"] is True
+        assert "file_path" in result
+        assert "file_size" in result
+        assert result["file_size"] == len(large_text)
+        with open(result["file_path"], 'r') as f:
+            assert f.read() == large_text
+
+    @patch('src.rasdaman_actions.WebCoverageService')
+    @patch('src.rasdaman_actions.WCPSConnection')
     def test_execute_wcps_exception(self, mock_wcps_class, mock_wcs_class):
         """Test handling of WCPSClientException during execution."""
         mock_wcps_instance = MagicMock()

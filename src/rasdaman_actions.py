@@ -145,6 +145,22 @@ class RasdamanActions:
                     logger.info(f"JSON result saved in file {tmpfile.name}")
                     return result
 
+            # text results (e.g. domain bounds like "(114.975:145.025)"): return
+            # directly if small, otherwise save as a text file
+            if isinstance(response.value, str):
+                text = response.value
+                if len(text) < SAVE_THRESHOLD:
+                    result["value"] = text
+                    logger.info(f"Returning text result: {text}")
+                    return result
+
+                with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.txt') as tmpfile:
+                    tmpfile.write(text)
+                    result["file_path"] = tmpfile.name
+                    result["file_size"] = str(len(text))
+                    logger.info(f"Text result saved in file {tmpfile.name}")
+                    return result
+
             # at this point the result is some binary format -> save to a file first
             with tempfile.NamedTemporaryFile(mode='wb', delete=False) as tmpfile:
                 tmpfile.write(response.value)
