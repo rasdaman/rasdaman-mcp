@@ -5,31 +5,26 @@ description: scale() resamples to a new grid/size (exact NxM output, factors) vs
 Two different domain operations that are easy to confuse:
 
 **scale() — RESAMPLES** the data onto a new grid (changes resolution, keeps
-the same picture). OGC 08-068r2 example — x/y scaling with per-field
-interpolation and null resistance:
-
+the same picture). Example x/y scaling
 ```
-scale( C,
-       { x ( lox : hix ) , y ( loy : hiy ) },
-       { red ( cubic , full ), nir ( linear, half ) } )
+scale( $c, { x ( lox : hix ) , y ( loy : hiy ) } )
 ```
 
-rasdaman accepts the simpler forms without the interpolation block, and the
-target may be an existing grid domain (guide example, inside a full query):
-
+The target may be the grid domain of another coverage:
 ```
-scale( $c, { imageCrsDomain( $c ) } )
+scale( $cov, { imageCrsDomain( $otherCov ) } )
 ```
 
-For an exact output size, give the target in grid coordinates (CRS:1),
-0-based inclusive — `x:"CRS:1"(0:99)` means 100 cells along x.
+Notes:
+- For an exact output size, give the target in grid coordinates (CRS:1),
+  0-based inclusive — `x:"CRS:1"(0:99)` means 100 cells along x.
+- Auto-ratio scaling allows to specify one spatial axis, so the other follows proportionally
+- Omit an axis to leave it unchanged in the scale result
 
 **extend() — PADS** the domain with null values (no resampling; the original
-data keeps its position and resolution, the added area is empty).
-OGC example:
-
+data keeps its position and resolution, the added area is empty). Example:
 ```
-extend( C, { x ( -200 : +200 ) } )
+extend( C, { x ( -200 : 200 ) } )
 ```
 
 The extend target must contain the input domain — it cannot shrink; combine
@@ -41,11 +36,8 @@ Which one do I want?
 - A stretched-looking result where a margin was expected = you used scale
   where extend was intended.
 
-Pitfalls:
+**Pitfalls**
 - Grid bounds are inclusive: `(0:99)` is 100 cells — off-by-one here is the
   most common scale error.
 - scale interpolates — exact-value comparisons after scaling are only
   approximate.
-- rasdaman extras (guide): auto-ratio scaling (give one axis, the other
-  follows proportionally) and non-scaled axes (omit an axis to leave it
-  untouched).

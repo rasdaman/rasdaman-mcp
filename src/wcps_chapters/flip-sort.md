@@ -5,11 +5,11 @@ description: FLIP $c ALONG axis (mirror an axis) and SORT $c ALONG axis [ASC|DES
 Two rasdaman extensions that reorder cells along an axis.
 
 **FLIP — mirror an axis:**
-
+Syntax:
 ```
 flipExp: FLIP coverageExpression ALONG axisLabel
 ```
-
+Example:
 ```
 for $c in (C)
 return encode( FLIP $c[x(0:100), y(0:100)] ALONG x, "image/png" )
@@ -20,11 +20,11 @@ named axis reverses. Works on any coverage expression, e.g.
 `FLIP $c + 20 ALONG t` on a 3-D timeseries reverses time order.
 
 **SORT — reorder slices along an axis by a computed rank:**
-
+Syntax:
 ```
 sortExp: SORT coverageExp ALONG sortAxis [ASC|DESC] BY cellExp
 ```
-
+Examples:
 ```
 for $c in (C)
 return encode( SORT $c ALONG x BY $c[y(0)], "image/png" )
@@ -36,7 +36,7 @@ return encode( SORT $c.b ALONG t DESC BY add($c), "json" )
 The coverage is sliced along `sortAxis`; `cellExp` produces one scalar rank
 per slice; slices are rearranged by rank (ASC default).
 
-Pitfalls:
+**Pitfalls**
 - These are keyword operators, not functions: `FLIP $c ALONG x`, never
   `flip($c, x)`.
 - In SORT's `BY` expression, do not subset the sort axis itself.

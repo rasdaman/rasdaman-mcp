@@ -3,7 +3,7 @@ description: Per-cell conditionals: switch/case/default for classification and c
 ---
 
 Per-cell conditional evaluation — classification, thresholding to colors,
-piecewise functions.
+piecewise functions. Syntax:
 
 ```
 SWITCH
@@ -12,29 +12,24 @@ SWITCH
   DEFAULT RETURN resultExpDefault
 ```
 
-Examples (adapted from the rasdaman geo-services guide):
-
+1. Color-code the coverage based on its values:
 ```
 switch
-  case $c < 10 return {red: 0;   green: 0;   blue: 255}
-  case $c < 20 return {red: 0;   green: 255; blue:   0}
-  case $c < 30 return {red: 255; green: 0;   blue:   0}
-  default      return {red: 0;   green: 0;   blue:   0}
+  case $c < 10 return {red: 0uc;   green: 0uc;   blue: 255uc}
+  case $c < 20 return {red: 0uc;   green: 255uc; blue:   0uc}
+  case $c < 30 return {red: 255uc; green: 0uc;   blue:   0uc}
+  default      return {red: 0uc;   green: 0uc;   blue:   0uc}
 ```
-
+2. Calculate log only at valid coverage values:
 ```
 switch
   case $c > 0 return log($c)
   default     return 0
 ```
 
-Constraints (from the guide):
-- All condition expressions must return booleans (scalar or coverage) and
-  share the same domain.
-- All result expressions must share the same domain and compatible types —
-  **all scalar, or all the same multiband structure**. Mixing a scalar branch
-  with a coverage/multiband branch fails (errors like "Two branches in the
-  CASE expression must be scalar or coverage").
+**Constraints**:
+- All condition expressions must return booleans, scalar or coverages with the same domain.
+- All result expressions must have the same domain and compatible cell types.
 - Cases evaluate top-down, least general first: `< 10`, then `< 20`, then
   `< 30`, then default — a more general condition placed earlier shadows the
   later ones.
@@ -43,7 +38,7 @@ If you want "value where condition, else 0" you can skip switch entirely and
 use the documented masking idiom `C * ( C > 0 )` (see induced-operations) —
 always type-safe.
 
-Pitfalls:
+**Pitfalls**
 - `default return` is mandatory.
 - Bind a repeated subset once with `let` instead of repeating it in every
-  case (see let-clause) — branches over different domains fail.
+  case (see let-clause.md).

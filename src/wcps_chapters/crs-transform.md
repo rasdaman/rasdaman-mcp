@@ -5,37 +5,36 @@ description: crsTransform() reprojection to another EPSG CRS with interpolation 
 Reprojects a coverage to another coordinate reference system (resamples the
 grid; cell values are interpolated).
 
-OGC 08-068r2 example — transform coverage C (with x and y dimensions) into
-the CRS given by URN, with linear interpolation and null resistance "none"
-applied to range field red:
-
+For example, to transform a coverage $c (with x and y axes) into
+the CRS given by "EPSG:4326", with bilinear interpolation:
 ```
-crsTransform( C,
-              { x: "urn:ogc:def:crs:EPSG::63266405",
-                y: "urn:ogc:def:crs:EPSG::63266405" },
-              { red( linear, none ) } )
+crsTransform( $c, { x: "EPSG:4326", y: "EPSG:4326" }, { bilinear } )
+```
+Or shorter form:
+```
+crsTransform( $c, "EPSG:4326", { bilinear } )
+```
+Further optional parameters allow to also rescale the grid to a given resolution
+(per axis), and crop the result, e.g.
+```
+crsTransform( $c, "EPSG:4326", { bilinear },
+              { Lat:0.5, Lon:-0.5 },          -- rescale reprojected result to axis resolutions
+              { Lat(30.5:60.5), Lon(40:60) }  -- crop reprojected result
+            )
 ```
 
-rasdaman also accepts the short EPSG form and axis names as they appear in
-the coverage, and the interpolation set may name just a method:
-
-```
-crsTransform( $c, { Lat: "EPSG:4326", Lon: "EPSG:4326" }, { bilinear } )
-```
-
-- Give both spatial axes the same target CRS for a normal reprojection; a
-  dimension without a CRS entry is not reprojected.
+**Notes**
+- An axis without a CRS entry is not reprojected; prefer the short form of
+  single CRS ("EPSG:4326") applying automatically to the spatial axes.
 - Interpolation methods: `near` (default), `bilinear`, `cubic`,
-  `cubicspline`, `average`.
-- GeoTIFF (`"image/tiff"`) is the right output format for reprojected
-  results — per the standard, a GeoTIFF response carries the coverage's geo
-  coordinates.
+  `cubicspline`, `lanczos`, `average`.
+- GeoTIFF (`"image/tiff"`) is usually a best output format for reprojected
+  2D results when preserving the geo-referencing information in the output
+  is important.
 
-Pitfalls:
-- Only 2-D (or 2-D slices of) coverages reproject — slice time/elevation
-  axes first.
+**Pitfalls**
+- Only 2-D (or 2-D slices of) coverages reproject — slice any time/elevation
+  axes first on the coverage when applying crsTransform to it.
 - Different tools/runs produce slightly different output grids for the same
   reprojection — sizes may differ by a few pixels; values change with the
   interpolation method (inherent to resampling, not an error).
-- The standard notes a server may refuse some CRS combinations (e.g.
-  different CRSs for x and y).

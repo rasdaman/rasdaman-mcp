@@ -1,41 +1,39 @@
 ---
-description: Multi-band values {red: e; green: e; blue: e} — building RGB output, combining bands from different coverages, constant bands. Fetch when producing color images or multi-band results.
+description: Multi-band values {red: $covExpr; green: $scalarExpr; blue: $covExpr } — building RGB output, combining bands from different coverage and scalar expressions. Fetch when producing color images or multi-band results.
 ---
 
 Builds a multi-band cell value from expressions — one entry per band,
 separated by SEMICOLONS.
 
-False-color encoding (OGC 08-068r2 example 1) — near-infrared, red and green
-bands combined into a 3-band 8-bit image, visually interpretable as RGB:
-
+1. False-color encoding — near-infrared, red and green bands combined 
+   into a 3-band 8-bit image, visually interpretable as RGB:
 ```
-struct
-{ red:   (char) L.nir;
-  green: (char) L.red;
-  blue:  (char) L.green
+{ red:   (unsigned char) $cov.nir;
+  green: (unsigned char) $cov.red;
+  blue:  (unsigned char) $cov.green
 }
 ```
-
-Greyscale to RGB (OGC example 2) — a single-band image G with range field
-`panchromatic` becomes an RGB-structured image:
-
+2. Greyscale to RGB (OGC example 2) — a single-band image $cov with range field
+   `panchromatic` becomes an RGB-structured image:
 ```
-{ red:   G.panchromatic;
-  green: G.panchromatic;
-  blue:  G.panchromatic }
+{ red: $cov; green: $cov; blue: $cov }
+```
+3. Red band values are taken from the single-band $cov, while blue and green 
+   are set to scalar constants:
+```
+{ red: $cov; green: 0uc; blue: 200uc }
 ```
 
-- The `struct` keyword is optional in rasdaman; the brace form alone works.
+**Notes**
 - Band names are your choice (they name the output bands); values may be any
-  coverage expression over identical domains, or scalars (constant band).
-- Also used as the return value of switch cases for color output
-  (see switch-case).
+  coverage expression over identical domains, or scalars.
+- Often used as the return value of switch cases for color output (see switch-case.md).
 
-Pitfalls:
+**Pitfalls**
 - Separator is `;` between bands, `:` after the name — never commas.
-- All expression entries must share the same domain; a scalar entry adapts to
+- All coverage expressions must share the same domain; a scalar value adapts to
   the others' domain.
 - Output band order = the order written; PNG encoders expect red, green, blue
   (optionally alpha) in that order.
-- Cast bands to `(char)` when encoding to 8-bit image formats, as in the OGC
-  example above.
+- Cast bands to `(unsigned char)` when encoding to 8-bit image formats, if the
+  input coverage value is of a different type.

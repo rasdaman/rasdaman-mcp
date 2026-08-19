@@ -16,7 +16,7 @@ coverage+scalar.
 - Band (field) selection: `C.red` or by position `C.0`
 - Overlay: `A overlay B` — B where A is null/zero, else A (layering images)
 
-Examples (all from OGC 08-068r2):
+Examples:
 
 ```
 sqrt( C + D )        -- square root of the sum of two coverages, per cell
@@ -30,7 +30,7 @@ C * ( C > 0 )        -- mask multiplication: keep positive values, zero the rest
 count( I * B )       -- integer coverage masked by boolean, then counted
 ```
 
-Pitfalls:
+**Pitfalls**
 - Comparing/adding two subsets works only if their domains align exactly —
   subset both operands identically except for the axis that differs.
 - Integer division truncates: use a float literal (`/ 2.0`) when you want a

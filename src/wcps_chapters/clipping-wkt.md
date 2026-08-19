@@ -3,8 +3,8 @@ description: clip() with WKT POLYGON/LINESTRING: exact syntax, unquoted WKT, ver
 ---
 
 `clip()` cuts a coverage to a WKT geometry; cells outside become null.
-Signature:
 
+Syntax:
 ```
 clip( coverageExpression, wkt [, subsettingCrs ] )
 ```
@@ -22,7 +22,7 @@ return encode(
    "image/png" )
 ```
 
-- **Coordinate order follows the axis order of the CRS in effect** — for a
+- **Coordinate order follows the axis order of the CRS of $c** — for a
   (lat, long) CRS every vertex is `lat long`; for an (E, N) CRS it is `e n`.
   Getting this backwards is THE classic clip failure: a thin sliver, empty
   result, or out-of-extent error.

@@ -6,27 +6,25 @@ Read a coverage's axis extents from within a query — the glue for
 constructors and condensers.
 
 - `imageCrsDomain($c, axis)` → the axis's GRID index range (integers,
-  0-based). This is what `over`-clauses want. The standard itself defines the
-  reduce shorthands this way (OGC 08-068r2, Table 4):
-
+  0-based). Often used in `over`-clauses, or as a scale target:
 ```
-add(a) = condense +
-         over p1 D1( imageCrsDomain(a, D1) ),
-              ...,
-              pd Dd( imageCrsDomain(a, Dd) )
-         using a[ p1, ..., pd ]
+condense +
+over $it1 axis1( imageCrsDomain($c, axis1) ),
+     ...,
+     $itD axisD( imageCrsDomain($c, axisD) )
+using $c[ p1, ..., pd ]
+
+scale( $c, { imageCrsDomain( $anotherCov ) } )
 ```
 
-- `imageCrsDomain($c)` (no axis) → the full grid domain; usable directly as
-  a scale target (guide example): `scale( $c, { imageCrsDomain( $c ) } )`.
 - `domain($c, axis)` → the axis's GEO extent (native CRS units), with
   `.lo` / `.hi` accessors — usable inside subsets:
-  `$c[Lat( 30 : domain($c, Lat).hi )]`.
-- Applying a grid iterator back onto a geo-referenced coverage requires the
-  CRS:1 qualifier: `$c[ansi:"CRS:1"($t)]` (see subsetting).
+```
+$c[Lat( 30 : domain($c, Lat).hi )]  ==  $c[Lat( 30 : * )]
+```
 
-Pitfalls:
-- Mixing the two: an `over`-clause fed `domain()` (geo floats) instead of
+**Pitfalls**
+- Mixing the two: a `domain()` in an `over`-clause (geo coordinates) instead of
   `imageCrsDomain()` (grid ints) fails or iterates nonsense.
 - Subset the coverage inside the call to restrict the range:
   `imageCrsDomain($c[ ... subset ... ], axis)`.
