@@ -29,7 +29,7 @@ dependencies = [
     "requests",
     "fastmcp",
     "wcs >= 0.3.0",
-    "wcps >= 0.5.6",
+    "wcps >= 0.5.7",
     "netCDF4",
     "Pillow",
     "antlr4-python3-runtime",
