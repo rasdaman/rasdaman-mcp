@@ -18,7 +18,7 @@ results (avg, count, a single cell) must NOT be encoded.
   slice all other axes first, cast/scale values into 0..255 with `(unsigned char) $c` if needed.
 - JSON output of a 2-D subset is nested arrays; of a 1-D series, a flat array.
 - Extra encoder parameters are a third argument, e.g.
-  `encode($c, "image/tiff", "compression='LZW'")`.
+  `encode($c, "image/tiff", "{ \"transpose\": [0,1] }")`.
 - decode() is the inverse — querying data uploaded in the request;
   rarely needed in analytics queries.
 

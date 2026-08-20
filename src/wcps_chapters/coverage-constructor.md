@@ -58,3 +58,8 @@ return
   iteration axis silently collapses the result.
 - Don't use a constructor where a plain induced expression suffices
   (e.g. band math, see induced-operations.md).
+- When encoding a coverage constructor to PNG or TIFF, double check that the
+  image orientation is as expected; often the order of axes when encoding 
+  can be transposed. If this is the case, you can use a format parameter 
+  in the encode function, e.g. to transpose the first and second axes:
+  `encode($covExpr, "png", "{ \"transpose\": [0,1] }")`
