@@ -5,7 +5,7 @@ description: scale() resamples to a new grid/size (exact NxM output, factors) vs
 Two different domain operations that are easy to confuse:
 
 **scale() — RESAMPLES** the data onto a new grid (changes resolution, keeps
-the same picture). Example x/y scaling
+the same picture) with nearest neighbour interpolation. Example x/y scaling
 ```
 scale( $c, { x ( lox : hix ) , y ( loy : hiy ) } )
 ```
@@ -39,5 +39,4 @@ Which one do I want?
 **Pitfalls**
 - Grid bounds are inclusive: `(0:99)` is 100 cells — off-by-one here is the
   most common scale error.
-- scale interpolates — exact-value comparisons after scaling are only
-  approximate.
+- scale in rasdaman is done with nearest-neighbour interpolation.
