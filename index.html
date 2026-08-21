@@ -1,0 +1,1404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rasdaman MCP Server: AI Agent Intelligence on Geo-Spatial Datacubes</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #050810;
+            --bg-secondary: #0a0f1c;
+            --bg-tertiary: #111827;
+            --accent-cyan: #00f0ff;
+            --accent-green: #39ff14;
+            --accent-purple: #b829f7;
+            --accent-orange: #ff6b35;
+            --text-primary: #f0f4f8;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --border-subtle: rgba(148, 163, 184, 0.1);
+            --border-glow: rgba(0, 240, 255, 0.3);
+            --font-display: 'Space Grotesk', sans-serif;
+            --font-body: 'Crimson Pro', Georgia, serif;
+            --font-mono: 'JetBrains Mono', monospace;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: var(--font-body);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        /* Animated Background Canvas */
+        #constellation-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* Aurora Gradient Overlay */
+        .aurora-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+            background: 
+                radial-gradient(ellipse 80% 50% at 20% 40%, rgba(0, 240, 255, 0.08) 0%, transparent 50%),
+                radial-gradient(ellipse 60% 40% at 80% 60%, rgba(56, 189, 248, 0.06) 0%, transparent 50%),
+                radial-gradient(ellipse 50% 30% at 50% 100%, rgba(57, 255, 20, 0.05) 0%, transparent 50%);
+            animation: aurora-shift 20s ease-in-out infinite alternate;
+        }
+
+        @keyframes aurora-shift {
+            0% { opacity: 0.8; transform: translateX(-2%) translateY(-1%); }
+            100% { opacity: 1; transform: translateX(2%) translateY(1%); }
+        }
+
+        /* Noise Texture - Static PNG */
+        .noise-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 2;
+            pointer-events: none;
+            opacity: 0.04;
+            background-image: url('assets/img/noise.png');
+            background-repeat: repeat;
+        }
+
+        /* Main Content */
+        .content-wrapper {
+            position: relative;
+            z-index: 10;
+        }
+
+        /* Navigation */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            padding: 1.5rem 3rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: linear-gradient(to bottom, rgba(5, 8, 16, 0.95) 0%, transparent 100%);
+            backdrop-filter: blur(10px);
+        }
+
+        .logo {
+            font-family: var(--font-display);
+            font-size: 1.25rem;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            position: relative;
+        }
+
+        .logo-icon::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: conic-gradient(from 0deg, var(--accent-cyan), var(--accent-green), var(--accent-cyan));
+            border-radius: 8px;
+            animation: logo-rotate 8s linear infinite;
+        }
+
+        .logo-icon::after {
+            content: '';
+            position: absolute;
+            inset: 2px;
+            background: var(--bg-primary);
+            border-radius: 6px;
+        }
+
+        @keyframes logo-rotate {
+            to { transform: rotate(360deg); }
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2.5rem;
+            list-style: none;
+        }
+
+        a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-family: var(--font-display);
+            font-size: 1em;
+            font-weight: 500;
+            letter-spacing: 0.02em;
+            transition: color 0.3s ease;
+            position: relative;
+        }
+
+        a::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            width: 0;
+            height: 1px;
+            background: var(--accent-cyan);
+            transition: width 0.3s ease;
+        }
+
+        a:hover {
+            color: var(--text-primary);
+        }
+
+        a:hover::after {
+            width: 100%;
+        }
+
+        /* Hero Section */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 8rem 3rem 4rem;
+            position: relative;
+        }
+
+        .hero-grid {
+            display: grid;
+            grid-template-columns: 1.2fr 1fr;
+            gap: 4rem;
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
+            align-items: center;
+        }
+
+        .hero-content {
+            animation: fade-in-up 1s ease-out;
+        }
+
+        @keyframes fade-in-up {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: rgba(0, 240, 255, 0.1);
+            border: 1px solid var(--border-glow);
+            border-radius: 100px;
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            color: var(--accent-cyan);
+            margin-bottom: 2rem;
+            animation: pulse-glow 3s ease-in-out infinite;
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 10px rgba(0, 240, 255, 0.2); }
+            50% { box-shadow: 0 0 20px rgba(0, 240, 255, 0.4); }
+        }
+
+        .badge-dot {
+            width: 6px;
+            height: 6px;
+            background: var(--accent-green);
+            border-radius: 50%;
+            animation: blink 2s ease-in-out infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        .hero h1 {
+            font-family: var(--font-display);
+            font-size: clamp(3rem, 6vw, 5rem);
+            font-weight: 700;
+            line-height: 1.05;
+            letter-spacing: -0.03em;
+            margin-bottom: 1.5rem;
+        }
+
+        .hero h1 span { display: block; }
+
+        .hero h1 .gradient-text {
+            background: linear-gradient(135deg, var(--accent-cyan) 0%, var(--accent-green) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-description {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            max-width: 540px;
+            margin-bottom: 2.5rem;
+            line-height: 1.7;
+        }
+
+        .hero-cta {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 1rem 2rem;
+            font-family: var(--font-display);
+            font-size: 0.9375rem;
+            font-weight: 600;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: none;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-cyan) 0%, #0891b2 100%);
+            color: var(--bg-primary);
+            box-shadow: 0 4px 20px rgba(0, 240, 255, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(0, 240, 255, 0.4);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--text-primary);
+            border: 1px solid var(--border-subtle);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--accent-cyan);
+            background: rgba(0, 240, 255, 0.05);
+        }
+
+        /* Hero Visual */
+        .hero-visual {
+            position: relative;
+            animation: fade-in-up 1s ease-out 0.2s both;
+        }
+
+        .code-window {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-subtle);
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(0, 240, 255, 0.1);
+        }
+
+        .code-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 1rem 1.25rem;
+            background: rgba(255, 255, 255, 0.02);
+            border-bottom: 1px solid var(--border-subtle);
+        }
+
+        .code-dot { width: 12px; height: 12px; border-radius: 50%; }
+        .code-dot.red { background: #ff5f56; }
+        .code-dot.yellow { background: #ffbd2e; }
+        .code-dot.green { background: #27c93f; }
+
+        .code-title {
+            margin-left: auto;
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .code-content {
+            padding: 1.5rem;
+            font-family: var(--font-mono);
+            font-size: 0.875rem;
+            line-height: 1.8;
+            overflow-x: auto;
+        }
+
+        .code-line { display: flex; gap: 1rem; }
+
+        .line-number {
+            color: var(--text-muted);
+            user-select: none;
+            min-width: 2rem;
+            text-align: right;
+        }
+
+        .code-text { color: var(--text-primary); }
+        .code-keyword { color: var(--accent-purple); }
+        .code-function { color: var(--accent-cyan); }
+        .code-user { color: var(--accent-orange); }
+        .code-string { color: var(--accent-green); }
+        .code-comment { color: var(--text-muted); font-style: italic; }
+
+        /* Section Headers */
+        .section-header {
+            text-align: center;
+            max-width: 700px;
+            margin: 0 auto 4rem;
+        }
+
+        .section-label {
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            color: var(--accent-cyan);
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            margin-bottom: 1rem;
+        }
+
+        .section-title {
+            font-family: var(--font-display);
+            font-size: clamp(2rem, 4vw, 3rem);
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            margin-bottom: 1rem;
+        }
+
+        .section-subtitle {
+            font-size: 1.125rem;
+            color: var(--text-secondary);
+        }
+
+        /* Installation Section */
+        .installation {
+            padding: 6rem 3rem;
+            background: linear-gradient(to bottom, transparent, rgba(0, 240, 255, 0.02), transparent);
+        }
+
+        .install-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3rem;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .install-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-subtle);
+            border-radius: 16px;
+            padding: 2rem;
+            transition: all 0.4s ease;
+        }
+
+        .install-card:hover {
+            border-color: var(--border-glow);
+            transform: translateY(-4px);
+        }
+
+        .install-card h3 {
+            font-family: var(--font-display);
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .install-card p {
+            color: var(--text-secondary);
+            margin-bottom: 1.5rem;
+            font-size: 0.9375rem;
+        }
+
+        .code-block {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-subtle);
+            border-radius: 8px;
+            padding: 1rem;
+            font-family: var(--font-mono);
+            font-size: 0.8125rem;
+            overflow-x: auto;
+            position: relative;
+        }
+
+        .code-block::before {
+            content: '$';
+            position: absolute;
+            left: 1rem;
+            color: var(--accent-cyan);
+        }
+
+        .code-block code {
+            margin-left: 1.5rem;
+            color: var(--text-primary);
+        }
+
+        /* Usage Modes Section */
+        .usage {
+            padding: 6rem 3rem;
+        }
+
+        .modes-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 2rem;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        .mode-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-subtle);
+            border-radius: 16px;
+            overflow: hidden;
+            transition: all 0.4s ease;
+        }
+
+        .mode-card:hover {
+            border-color: var(--border-glow);
+        }
+
+        .mode-header {
+            padding: 1.5rem;
+            background: rgba(0, 240, 255, 0.05);
+            border-bottom: 1px solid var(--border-subtle);
+        }
+
+        .mode-header h3 {
+            font-family: var(--font-display);
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .mode-header p {
+            color: var(--text-secondary);
+            font-size: 0.9375rem;
+        }
+
+        .mode-content {
+            padding: 1.5rem;
+        }
+
+        .mode-content h4 {
+            font-family: var(--font-display);
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--accent-cyan);
+            margin-bottom: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .mode-content pre {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-subtle);
+            border-radius: 8px;
+            padding: 1rem;
+            font-family: var(--font-mono);
+            font-size: 0.8125rem;
+            overflow-x: auto;
+            margin-bottom: 1.5rem;
+            color: var(--text-primary);
+        }
+
+        .benefits-list {
+            list-style: none;
+        }
+
+        .benefits-list li {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            margin-bottom: 0.75rem;
+            color: var(--text-secondary);
+            font-size: 0.9375rem;
+        }
+
+        .benefits-list li::before {
+            content: '→';
+            color: var(--accent-green);
+            font-weight: bold;
+        }
+
+        /* Configuration Section */
+        .configuration {
+            padding: 6rem 3rem;
+            background: linear-gradient(to bottom, transparent, rgba(184, 41, 247, 0.03), transparent);
+        }
+
+        .config-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 2rem;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .config-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-subtle);
+            border-radius: 16px;
+            padding: 2rem;
+        }
+
+        .config-card h3 {
+            font-family: var(--font-display);
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .env-var {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.875rem 1rem;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-subtle);
+            border-radius: 8px;
+            margin-bottom: 0.75rem;
+        }
+
+        .env-var code {
+            font-family: var(--font-mono);
+            font-size: 0.8125rem;
+            color: var(--accent-cyan);
+        }
+
+        .env-var span {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        /* Examples Section */
+        .examples {
+            padding: 6rem 3rem;
+            background: linear-gradient(to bottom, transparent, rgba(57, 255, 20, 0.02), transparent);
+        }
+
+        .examples-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        .example-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-subtle);
+            border-radius: 16px;
+            overflow: hidden;
+            transition: all 0.4s ease;
+        }
+
+        .example-card:hover {
+            border-color: var(--border-glow);
+            transform: translateY(-4px);
+        }
+
+        .example-card.wide {
+            grid-column: span 2;
+        }
+
+        .example-image {
+            width: 100%;
+            height: auto;
+            max-height: 300px;
+            background: linear-gradient(135deg, var(--bg-tertiary) 0%, var(--bg-secondary) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-bottom: 1px solid var(--border-subtle);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .example-image img {
+            width: 100%;
+            height: auto;
+            object-fit: cover;
+            display: block;
+            cursor: zoom-in;
+            transition: transform 0.3s ease;
+        }
+
+        .example-image:hover img {
+            transform: scale(1.02);
+        }
+
+        .example-image.wide-img {
+            max-height: 400px;
+        }
+
+        .example-image.wide-img img {
+            object-fit: contain;
+            background: var(--bg-primary);
+        }
+
+        /* Lightbox Styles */
+        .lightbox {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(5, 8, 16, 0.95);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            padding: 2rem;
+        }
+
+        .lightbox.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .lightbox img {
+            max-width: 100%;
+            max-height: 90vh;
+            object-fit: contain;
+            border-radius: 8px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+        }
+
+        .lightbox.active img {
+            transform: scale(1);
+        }
+
+        .lightbox-close {
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-subtle);
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: var(--text-secondary);
+            font-size: 1.5rem;
+        }
+
+        .lightbox-close:hover {
+            background: var(--bg-tertiary);
+            border-color: var(--accent-cyan);
+            color: var(--text-primary);
+        }
+
+        .lightbox-caption {
+            position: absolute;
+            bottom: 1.5rem;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-subtle);
+            border-radius: 8px;
+            padding: 0.75rem 1.5rem;
+            font-family: var(--font-display);
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            max-width: 80%;
+            text-align: center;
+        }
+
+        .example-content {
+            padding: 1.5rem;
+        }
+
+        .example-content h3 {
+            font-family: var(--font-display);
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .example-content p {
+            color: var(--text-secondary);
+            font-size: 0.9375rem;
+        }
+
+        /* Footer */
+        footer {
+            padding: 4rem 3rem;
+            border-top: 1px solid var(--border-subtle);
+            text-align: center;
+        }
+
+        .footer-content {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .footer-logo {
+            font-family: var(--font-display);
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        .footer-text {
+            color: var(--text-secondary);
+            font-size: 0.9375rem;
+            margin-bottom: 2rem;
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .footer-links a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-family: var(--font-display);
+            font-size: 0.875rem;
+            transition: color 0.3s ease;
+        }
+
+        .footer-links a:hover {
+            color: var(--accent-cyan);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .hero-grid { grid-template-columns: 1fr; gap: 3rem; }
+            .install-grid { grid-template-columns: 1fr; }
+            .modes-grid { grid-template-columns: 1fr; }
+            .config-grid { grid-template-columns: 1fr; }
+            .tools-layout { grid-template-columns: 1fr; }
+            .tool-preview { position: relative; top: 0; }
+            .examples-grid { grid-template-columns: 1fr; }
+            .example-card.wide { grid-column: span 1; }
+            .workflow-grid { grid-template-columns: repeat(2, 1fr); }
+            .workflow-grid::before { display: none; }
+            .dev-grid { grid-template-columns: 1fr; }
+        }
+
+        @media (max-width: 768px) {
+            nav { padding: 1rem 1.5rem; }
+            .nav-links { display: none; }
+            .hero { padding: 6rem 1.5rem 3rem; }
+            .installation, .usage, .configuration, .tools, .examples, .workflow, .development {
+                padding: 4rem 1.5rem;
+            }
+            .workflow-grid { grid-template-columns: 1fr; }
+        }
+
+        /* Scroll Reveal */
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s ease;
+        }
+        .reveal.visible { opacity: 1; transform: translateY(0); }
+    </style>
+</head>
+<body>
+    <canvas id="constellation-canvas"></canvas>
+    <div class="aurora-overlay"></div>
+    <div class="noise-overlay"></div>
+
+    <div class="content-wrapper">
+        <nav>
+            <div class="logo">
+                <div class="logo-icon"></div>
+                rasdaman-mcp
+            </div>
+            <ul class="nav-links">
+                <li><a href="#installation">Installation</a></li>
+                <li><a href="#usage">Usage</a></li>
+                <li><a href="#examples">Examples</a></li>
+                <li><a href="https://github.com/rasdaman/rasdaman-mcp">GitHub</a></li>
+            </ul>
+        </nav>
+
+        <!-- Hero Section -->
+        <section class="hero">
+            <div class="hero-grid">
+                <div class="hero-content">
+                    <div class="badge">
+                        <span class="badge-dot"></span>
+                        rasdaman-mcp v0.4.5
+                    </div>
+                    <h1>
+                        <span>AI Agent</span>
+                        <span class="gradient-text">Intelligence</span>
+                        <span>on Datacubes</span>
+                    </h1>
+                    <p class="hero-description">
+                        Enable natural language interaction with geo-spatial datacubes in <a href="https://rasdaman.com">rasdaman</a>:
+                        satellite time-series, climate models, simulations, etc.
+                    </p>
+                    <div class="hero-cta">
+                        <a href="#installation" class="btn btn-primary">
+                            Get Started
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </a>
+                        <a href="https://github.com/rasdaman/rasdaman-mcp" class="btn btn-secondary">
+                            View on GitHub
+                        </a>
+                    </div>
+                </div>
+                <div class="hero-visual">
+                    <div class="code-window">
+                        <div class="code-header">
+                            <span class="code-dot red"></span>
+                            <span class="code-dot yellow"></span>
+                            <span class="code-dot green"></span>
+                            <span class="code-title">AI Conversation</span>
+                        </div>
+                        <div class="code-content">
+                            <div class="code-line">
+                                <span class="line-number">User</span>
+                                <span class="code-user">Summarize the available datacubes.</span>
+                            </div>
+                            <div class="code-line">
+                                <span class="line-number">AI</span>
+                                <span class="code-function">There are 244 coverages available in rasdaman, including</span>
+                            </div>
+                            <div class="code-line">
+                                <span class="line-number"></span>
+                                <span class="code-function">- <i>Climate data:</i> ERA5 / ERA5_Land_monthly, CMIP6</span>
+                            </div>
+                            <div class="code-line">
+                                <span class="line-number"></span>
+                                <span class="code-function">- <i>Soil moisture:</i> C3S (active, passive, combined)</span>
+                            </div>
+                            <div class="code-line">
+                                <span class="line-number"></span>
+                                <span class="code-function">- <i>Sentinel missions:</i> S1 (SAR), S2 (MSI), S3 (OLCI, SLSTR)</span>
+                            </div>
+                            <div class="code-line">
+                                <span class="line-number"></span>
+                                <span class="code-function">- <i>Land cover:</i> CLMS products</span>
+                            </div>
+                            <div class="code-line">
+                                <span class="line-number"></span>
+                                <span class="code-function">- <i>Bathymetry/Topography:</i> Bathymetry_insitu, EU_DEM</span>
+                            </div>
+                            <div class="code-line">
+                                <span class="line-number"></span>
+                                <span class="code-function">- ...</span>
+                            </div>
+                            <div class="code-line">
+                                <span class="line-number">&nbsp;</span>
+                            </div>
+                            <div class="code-line">
+                                <span class="line-number">User</span>
+                                <span class="code-user">Can you create NDVI for June 12, 2025?</span>
+                            </div>
+                            <div class="code-line">
+                                <span class="line-number">AI</span>
+                                <span class="code-function">I will execute the query below to calculate an NDVI map:</span>
+                            </div>
+                            <div class="code-line">
+                                <span class="line-number"></span>
+                                <span class="code-keyword">for</span> $c <span class="code-keyword">in</span> (Sentinel2_L2A_10m)</span>
+                            </div>
+                            <div class="code-line">
+                                <span class="line-number"></span>
+                                <span class="code-keyword">return</span> encode(
+                            </div>
+                            <div class="code-line">
+                                <span class="line-number"></span>
+                                &nbsp;&nbsp;( ( $c.B04 - $c.B08 ) / ( $c.B04 + $c.B08 ) )
+                            </div>
+                            <div class="code-line">
+                                <span class="line-number"></span>
+                                &nbsp;&nbsp;[ time("2025-06-12"), Lat(*:*), Lon(*:*) ], <span class="code-string">"tiff"</span> )
+                            </div>
+                            <div class="code-line">
+                                <span class="line-number"></span>
+                                <span class="code-function">The result is saved to /tmp/tmpqjtfkplm</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Installation Section -->
+        <section class="installation" id="installation">
+            <div class="section-header reveal">
+                <p class="section-label">Quick Start</p>
+                <h2 class="section-title">Installation</h2>
+                <p class="section-subtitle">Get up and running in seconds with pip or install from source for development</p>
+            </div>
+            <div class="install-grid">
+                <div class="install-card reveal">
+                    <h3>📦 PyPI Install</h3>
+                    <p>Install the latest stable release from PyPI</p>
+                    <div class="code-block">
+                        <code>pip install rasdaman-mcp</code>
+                    </div>
+                </div>
+                <div class="install-card reveal">
+                    <h3>🔧 Development Install</h3>
+                    <p>Clone and install from source for development</p>
+                    <div class="code-block">
+                        <code>git clone https://github.com/rasdaman/rasdaman-mcp.git</code>
+                    </div>
+                    <div class="code-block" style="margin-top: 0.5rem;">
+                        <code>cd rasdaman-mcp && uv pip install -e .</code>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Usage Modes Section -->
+        <section class="usage" id="usage">
+            <div class="section-header reveal">
+                <p class="section-label">Configuration</p>
+                <h2 class="section-title">Usage Modes</h2>
+                <p class="section-subtitle">Choose between stdio for direct AI integration or HTTP for microservice deployment</p>
+            </div>
+            <div class="modes-grid">
+                <div class="mode-card reveal">
+                    <div class="mode-header">
+                        <h3>stdio Mode</h3>
+                        <p>Direct integration with AI agents via standard input/output</p>
+                    </div>
+                    <div class="mode-content">
+                        <h4>General Command</h4>
+                        <pre>rasdaman-mcp --username rasguest \
+  --password rasguest \
+  --rasdaman-url "..."</pre>
+                        <h4>Example: gemini-cli</h4>
+                        <pre>gemini mcp add rasdaman-mcp \
+  "rasdaman-mcp --username rasguest \
+  --password rasguest \
+  --rasdaman-url http://localhost:8080/rasdaman/ows"</pre>
+                        <h4>Benefits</h4>
+                        <ul class="benefits-list">
+                            <li>Simplicity: No separate server process or ports</li>
+                            <li>Seamless Integration: Tools available within client environment</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="mode-card reveal">
+                    <div class="mode-header">
+                        <h3>HTTP Mode</h3>
+                        <p>Standalone Web server for microservice deployment</p>
+                    </div>
+                    <div class="mode-content">
+                        <h4>Start Server</h4>
+                        <pre>rasdaman-mcp --transport http \
+  --host 127.0.0.1 --port 8000 \
+  --rasdaman-url "..."</pre>
+                        <h4>Configure Agent: Mistral Vibe</h4>
+                        <pre>[[mcp_servers]]
+name = "rasdaman-mcp"
+transport = "streamable-http"
+url = "http://127.0.0.1:8000/mcp/"</pre>
+                        <h4>Benefits</h4>
+                        <ul class="benefits-list">
+                            <li>Scalability: Containerize or deploy on a separate server</li>
+                            <li>Decoupling: Any HTTP client can connect and interact</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section-header reveal">
+                <br/>
+                <h2 class="section-title">Rasdaman Connection</h2>
+                <p class="section-subtitle">Configure rasdaman connection via environment variables or CLI arguments</p>
+            </div>
+            <div class="config-grid">
+                <div class="config-card reveal">
+                    <h3>🔐 Environment Variables</h3>
+                    <div class="env-var">
+                        <code>RASDAMAN_URL</code>
+                        <span>Server endpoint</span>
+                    </div>
+                    <div class="env-var">
+                        <code>RASDAMAN_USERNAME</code>
+                        <span>Valid username</span>
+                    </div>
+                    <div class="env-var">
+                        <code>RASDAMAN_PASSWORD</code>
+                        <span>Corresponding password</span>
+                    </div>
+                </div>
+                <div class="config-card reveal">
+                    <h3>⚙️ CLI Arguments</h3>
+                    <div class="env-var">
+                        <code>--rasdaman-url</code>
+                        <span>Server endpoint</span>
+                    </div>
+                    <div class="env-var">
+                        <code>--username</code>
+                        <span>Valid username</span>
+                    </div>
+                    <div class="env-var">
+                        <code>--password</code>
+                        <span>Corresponding password</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Examples Section -->
+        <section class="examples" id="examples">
+            <div class="section-header reveal">
+                <p class="section-label">Showcase</p>
+                <h2 class="section-title">Example Interactions</h2>
+                <p class="section-subtitle">See how AI agents can interact with rasdaman through natural language</p>
+            </div>
+            <div class="examples-grid">
+                <div class="example-card reveal">
+                    <div class="example-image">
+                        <img src="assets/img/01-list_coverages.png" alt="Listing available coverages in rasdaman" loading="lazy">
+                    </div>
+                    <div class="example-content">
+                        <h3>Listing Coverages</h3>
+                        <p>"What coverages are available in my rasdaman instance?" — AI discovers and categorizes the available datasets.</p>
+                    </div>
+                </div>
+                <div class="example-card reveal">
+                    <div class="example-image">
+                        <img src="assets/img/02-describe-coverage.png" alt="Describing ERA5_Land_monthly coverage metadata" loading="lazy">
+                    </div>
+                    <div class="example-content">
+                        <h3>Describing a Coverage</h3>
+                        <p>"Describe the ERA5_Land_monthly coverage" — The agent retrieves comprehensive datacube metadata, which allows to perform accurate queries for processing and analytics later on.</p>
+                    </div>
+                </div>
+                <div class="example-card reveal">
+                    <div class="example-image">
+                        <img src="assets/img/03-execute-query.png" alt="Executing WCPS query for wind speed calculation" loading="lazy">
+                    </div>
+                    <div class="example-content">
+                        <h3>Performing Calculations</h3>
+                        <p>"Calculate wind speed for 2025-10" — The AI agent translates natural language to a WCPS query computing √(u²+v²), linear stretching, and export to PNG for visualization.</p>
+                    </div>
+                </div>
+                <div class="example-card reveal">
+                    <div class="example-image">
+                        <img src="assets/img/03.1-stretched_era5_scaled.png" alt="Global wind speed visualization result" loading="lazy">
+                    </div>
+                    <div class="example-content">
+                        <h3>Query Result Visualization</h3>
+                        <p>Global wind speed patterns for October 2025 — 3600×1801 pixel grayscale image with darker values representing lower wind speeds and brighter values higher speeds.</p>
+                    </div>
+                </div>
+                <div class="example-card wide reveal">
+                    <div class="example-image wide-img">
+                        <img src="assets/img/04-suggest-query.png" alt="Natural language query suggestion for wind farm analysis" loading="lazy">
+                    </div>
+                    <div class="example-content">
+                        <h3>Query Suggestion</h3>
+                        <p>"Analyze wind potential for optimal wind farm locations" — AI generates a complex WCPS query with 6-month averaging, coefficient of variation, and composite scoring to identify prime candidate areas.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Lightbox -->
+        <div class="lightbox" id="lightbox">
+            <button class="lightbox-close" onclick="closeLightbox()">&times;</button>
+            <img src="" alt="" id="lightbox-img">
+            <div class="lightbox-caption" id="lightbox-caption"></div>
+        </div>
+
+        <!-- Footer -->
+        <footer>
+            <div class="footer-content">
+                <div class="footer-logo">rasdaman-mcp</div>
+                <p class="footer-text">Bridging AI agents and geo-spatial datacubes via MCP.</p>
+                <ul class="footer-links">
+                    <li><a href="https://github.com/rasdaman/rasdaman-mcp">GitHub</a></li>
+                    <li><a href="https://rasdaman.org">rasdaman</a></li>
+                    <li><a href="https://pypi.org/project/rasdaman-mcp">PyPI</a></li>
+                </ul>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // Constellation Background Animation
+        const canvas = document.getElementById('constellation-canvas');
+        const ctx = canvas.getContext('2d');
+        
+        let width, height;
+        let particles = [];
+        const particleCount = 20;
+        const connectionDistance = 120;
+        const mouseDistance = 150;
+        
+        let mouse = { x: null, y: null };
+        
+        function resize() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        }
+        
+        class Particle {
+            constructor() {
+                this.x = Math.random() * width;
+                this.y = Math.random() * height;
+                this.vx = (Math.random() - 0.5) * 0.3;
+                this.vy = (Math.random() - 0.5) * 0.3;
+                this.radius = Math.random() * 20 + 0.5;
+                this.opacity = Math.random() * 0.5 + 0.2;
+            }
+            
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                
+                if (this.x < 0 || this.x > width) this.vx *= -1;
+                if (this.y < 0 || this.y > height) this.vy *= -1;
+                
+                if (mouse.x !== null && mouse.y !== null) {
+                    const dx = mouse.x - this.x;
+                    const dy = mouse.y - this.y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    
+                    if (dist < mouseDistance) {
+                        const force = (mouseDistance - dist) / mouseDistance;
+                        this.vx += dx * force * 0.001;
+                        this.vy += dy * force * 0.001;
+                    }
+                }
+                
+                const maxVel = 1;
+                const vel = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
+                if (vel > maxVel) {
+                    this.vx = (this.vx / vel) * maxVel;
+                    this.vy = (this.vy / vel) * maxVel;
+                }
+            }
+            
+            draw() {
+                const s = this.radius * 2;
+                const hs = s / 2;
+                const depth = s * 0.6;
+                const hd = depth / 2;
+                
+                // Back corner offset (up and right for isometric view)
+                const bx = this.x + hd;
+                const by = this.y - hd;
+                
+                ctx.strokeStyle = `rgba(0, 240, 255, ${this.opacity})`;
+                ctx.lineWidth = 0.5;
+                
+                // Front face (fully visible)
+                ctx.beginPath();
+                ctx.moveTo(this.x - hs, this.y - hs);
+                ctx.lineTo(this.x + hs, this.y - hs);
+                ctx.lineTo(this.x + hs, this.y + hs);
+                ctx.lineTo(this.x - hs, this.y + hs);
+                ctx.closePath();
+                ctx.stroke();
+                
+                // Top face - only visible edges (back edge and sides going back)
+                ctx.beginPath();
+                ctx.moveTo(this.x - hs, this.y - hs);
+                ctx.lineTo(bx - hs, by - hs);
+                ctx.lineTo(bx + hs, by - hs);
+                ctx.lineTo(this.x + hs, this.y - hs);
+                ctx.stroke();
+                
+                // Right face - only visible edges (back edge and sides going back)
+                ctx.beginPath();
+                ctx.moveTo(this.x + hs, this.y - hs);
+                ctx.lineTo(bx + hs, by - hs);
+                ctx.lineTo(bx + hs, by + hs);
+                ctx.lineTo(this.x + hs, this.y + hs);
+                ctx.stroke();
+            }
+        }
+        
+        function initParticles() {
+            particles = [];
+            for (let i = 0; i < particleCount; i++) {
+                particles.push(new Particle());
+            }
+        }
+        
+        function drawConnections() {
+            for (let i = 0; i < particles.length; i++) {
+                for (let j = i + 1; j < particles.length; j++) {
+                    const dx = particles[i].x - particles[j].x;
+                    const dy = particles[i].y - particles[j].y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    
+                    if (dist < connectionDistance) {
+                        const opacity = (1 - dist / connectionDistance) * 0.2;
+                        ctx.beginPath();
+                        ctx.moveTo(particles[i].x, particles[i].y);
+                        ctx.lineTo(particles[j].x, particles[j].y);
+                        ctx.strokeStyle = `rgba(0, 240, 255, ${opacity})`;
+                        ctx.lineWidth = 0.5;
+                        ctx.stroke();
+                    }
+                }
+                
+                if (mouse.x !== null && mouse.y !== null) {
+                    const dx = particles[i].x - mouse.x;
+                    const dy = particles[i].y - mouse.y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    
+                    if (dist < mouseDistance) {
+                        const opacity = (1 - dist / mouseDistance) * 0.3;
+                        ctx.beginPath();
+                        ctx.moveTo(particles[i].x, particles[i].y);
+                        ctx.lineTo(mouse.x, mouse.y);
+                        ctx.strokeStyle = `rgba(57, 255, 20, ${opacity})`;
+                        ctx.lineWidth = 0.5;
+                        ctx.stroke();
+                    }
+                }
+            }
+        }
+        
+        function animate() {
+            ctx.clearRect(0, 0, width, height);
+            particles.forEach(p => { p.update(); p.draw(); });
+            drawConnections();
+            requestAnimationFrame(animate);
+        }
+        
+        window.addEventListener('mousemove', (e) => {
+            mouse.x = e.clientX;
+            mouse.y = e.clientY;
+        });
+        
+        window.addEventListener('mouseleave', () => {
+            mouse.x = null;
+            mouse.y = null;
+        });
+        
+        window.addEventListener('resize', () => { resize(); initParticles(); });
+        
+        resize();
+        initParticles();
+        animate();
+        
+        // Tool Selection
+        const toolItems = document.querySelectorAll('.tool-item');
+        const previewPanels = document.querySelectorAll('.preview-panel');
+        
+        toolItems.forEach(item => {
+            item.addEventListener('click', () => {
+                const tool = item.dataset.tool;
+                toolItems.forEach(t => t.classList.remove('active'));
+                item.classList.add('active');
+                previewPanels.forEach(p => p.classList.remove('active'));
+                document.getElementById(`panel-${tool}`).classList.add('active');
+            });
+        });
+        
+        // Scroll Reveal
+        const revealElements = document.querySelectorAll('.reveal');
+        const revealObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                    revealObserver.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+        
+        revealElements.forEach(el => revealObserver.observe(el));
+
+        // Lightbox functionality
+        const lightbox = document.getElementById('lightbox');
+        const lightboxImg = document.getElementById('lightbox-img');
+        const lightboxCaption = document.getElementById('lightbox-caption');
+        const exampleImages = document.querySelectorAll('.example-image img');
+
+        exampleImages.forEach(img => {
+            img.addEventListener('click', () => {
+                lightboxImg.src = img.src;
+                lightboxImg.alt = img.alt;
+                // Get caption from parent card
+                const card = img.closest('.example-card');
+                const title = card.querySelector('h3').textContent;
+                const desc = card.querySelector('p').textContent;
+                lightboxCaption.textContent = title + ' — ' + desc;
+                lightbox.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            });
+        });
+
+        function closeLightbox() {
+            lightbox.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        // Close on background click
+        lightbox.addEventListener('click', (e) => {
+            if (e.target === lightbox) {
+                closeLightbox();
+            }
+        });
+
+        // Close on Escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && lightbox.classList.contains('active')) {
+                closeLightbox();
+            }
+        });
+    </script>
+</body>
+</html>
