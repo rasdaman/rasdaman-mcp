@@ -73,7 +73,7 @@ Examples:
 - `$c.red <= 120 and $c.green > 150`
 - `(unsigned char) $c` (cast all elements of $c to unsigned char, 0-255 values)
 
-**Resample (scale)**
+**Resample (scale) with nearest-neighbour interpolation**
 - `scale($c, {Lat(0:100), Lon(0:200)})` - To specific grid size
 - `scale($c, {imageCrsDomain($otherCov)})` - To match another coverage's domain
 - `scale($c, 2.0)` - By factor (f > 1 for scaling up, 0 < f < 1 scale down)
